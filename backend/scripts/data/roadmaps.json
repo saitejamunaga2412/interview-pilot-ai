@@ -1,0 +1,58 @@
+[
+  {
+    "topicId": "dsa-mastery",
+    "title": "DSA Mastery",
+    "category": "DSA",
+    "subCategory": "DSA",
+    "description": "Complete roadmap for DSA.",
+    "prerequisites": []
+  },
+  {
+    "topicId": "aptitude-mastery",
+    "title": "Aptitude Mastery",
+    "category": "Aptitude",
+    "subCategory": "Aptitude",
+    "description": "Complete roadmap for Aptitude.",
+    "prerequisites": []
+  },
+  {
+    "topicId": "core-cs-mastery",
+    "title": "Core CS Mastery",
+    "category": "CS Core",
+    "subCategory": "Core CS",
+    "description": "Complete roadmap for Core CS.",
+    "prerequisites": []
+  },
+  {
+    "topicId": "react-mastery",
+    "title": "React Mastery",
+    "category": "React",
+    "subCategory": "React",
+    "description": "Complete roadmap for React.",
+    "prerequisites": []
+  },
+  {
+    "topicId": "node.js-mastery",
+    "title": "Node.js Mastery",
+    "category": "Node.js",
+    "subCategory": "Node.js",
+    "description": "Complete roadmap for Node.js.",
+    "prerequisites": []
+  },
+  {
+    "topicId": "mern-mastery",
+    "title": "MERN Mastery",
+    "category": "MERN",
+    "subCategory": "MERN",
+    "description": "Complete roadmap for MERN.",
+    "prerequisites": []
+  },
+  {
+    "topicId": "ai/ml-mastery",
+    "title": "AI/ML Mastery",
+    "category": "AI/ML",
+    "subCategory": "AI/ML",
+    "description": "Complete roadmap for AI/ML.",
+    "prerequisites": []
+  }
+]

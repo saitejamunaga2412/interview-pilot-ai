@@ -1,0 +1,393 @@
+[
+  {
+    "title": "Number System Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Number System",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Number System. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Number System.",
+    "notes": "Key concepts for Number System.",
+    "formulaSheet": "Formulas for Number System.",
+    "shortcuts": "Shortcuts for Number System.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Simplification Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Simplification",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Simplification. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Simplification.",
+    "notes": "Key concepts for Simplification.",
+    "formulaSheet": "Formulas for Simplification.",
+    "shortcuts": "Shortcuts for Simplification.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Percentage Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Percentage",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Percentage. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Percentage.",
+    "notes": "Key concepts for Percentage.",
+    "formulaSheet": "Formulas for Percentage.",
+    "shortcuts": "Shortcuts for Percentage.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Ratio & Proportion Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Ratio & Proportion",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Ratio & Proportion. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Ratio & Proportion.",
+    "notes": "Key concepts for Ratio & Proportion.",
+    "formulaSheet": "Formulas for Ratio & Proportion.",
+    "shortcuts": "Shortcuts for Ratio & Proportion.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Average Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Average",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Average. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Average.",
+    "notes": "Key concepts for Average.",
+    "formulaSheet": "Formulas for Average.",
+    "shortcuts": "Shortcuts for Average.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Profit & Loss Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Profit & Loss",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Profit & Loss. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Profit & Loss.",
+    "notes": "Key concepts for Profit & Loss.",
+    "formulaSheet": "Formulas for Profit & Loss.",
+    "shortcuts": "Shortcuts for Profit & Loss.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "SI & CI Problem 1",
+    "category": "Aptitude",
+    "subCategory": "SI & CI",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on SI & CI. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for SI & CI.",
+    "notes": "Key concepts for SI & CI.",
+    "formulaSheet": "Formulas for SI & CI.",
+    "shortcuts": "Shortcuts for SI & CI.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Time & Work Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Time & Work",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Time & Work. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Time & Work.",
+    "notes": "Key concepts for Time & Work.",
+    "formulaSheet": "Formulas for Time & Work.",
+    "shortcuts": "Shortcuts for Time & Work.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Pipes & Cisterns Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Pipes & Cisterns",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Pipes & Cisterns. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Pipes & Cisterns.",
+    "notes": "Key concepts for Pipes & Cisterns.",
+    "formulaSheet": "Formulas for Pipes & Cisterns.",
+    "shortcuts": "Shortcuts for Pipes & Cisterns.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Time Speed Distance Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Time Speed Distance",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Time Speed Distance. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Time Speed Distance.",
+    "notes": "Key concepts for Time Speed Distance.",
+    "formulaSheet": "Formulas for Time Speed Distance.",
+    "shortcuts": "Shortcuts for Time Speed Distance.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Trains Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Trains",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Trains. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Trains.",
+    "notes": "Key concepts for Trains.",
+    "formulaSheet": "Formulas for Trains.",
+    "shortcuts": "Shortcuts for Trains.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Boats Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Boats",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Boats. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Boats.",
+    "notes": "Key concepts for Boats.",
+    "formulaSheet": "Formulas for Boats.",
+    "shortcuts": "Shortcuts for Boats.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Ages Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Ages",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Ages. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Ages.",
+    "notes": "Key concepts for Ages.",
+    "formulaSheet": "Formulas for Ages.",
+    "shortcuts": "Shortcuts for Ages.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Permutation Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Permutation",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Permutation. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Permutation.",
+    "notes": "Key concepts for Permutation.",
+    "formulaSheet": "Formulas for Permutation.",
+    "shortcuts": "Shortcuts for Permutation.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Combination Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Combination",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Combination. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Combination.",
+    "notes": "Key concepts for Combination.",
+    "formulaSheet": "Formulas for Combination.",
+    "shortcuts": "Shortcuts for Combination.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Probability Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Probability",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Probability. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Probability.",
+    "notes": "Key concepts for Probability.",
+    "formulaSheet": "Formulas for Probability.",
+    "shortcuts": "Shortcuts for Probability.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  },
+  {
+    "title": "Data Interpretation Problem 1",
+    "category": "Aptitude",
+    "subCategory": "Data Interpretation",
+    "difficulty": "Medium",
+    "questionText": "A standard problem on Data Interpretation. What is the answer?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correctAnswer": "A",
+    "explanation": "Explanation for Data Interpretation.",
+    "notes": "Key concepts for Data Interpretation.",
+    "formulaSheet": "Formulas for Data Interpretation.",
+    "shortcuts": "Shortcuts for Data Interpretation.",
+    "isImportant": true,
+    "companies": [
+      "TCS",
+      "Infosys"
+    ]
+  }
+]

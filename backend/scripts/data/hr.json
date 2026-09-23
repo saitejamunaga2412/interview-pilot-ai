@@ -1,0 +1,122 @@
+[
+  {
+    "title": "Self Introduction Question",
+    "category": "HR",
+    "subCategory": "Self Introduction",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated self introduction.",
+    "explanation": "Expected approach for Self Introduction.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Strengths Question",
+    "category": "HR",
+    "subCategory": "Strengths",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated strengths.",
+    "explanation": "Expected approach for Strengths.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Weakness Question",
+    "category": "HR",
+    "subCategory": "Weakness",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated weakness.",
+    "explanation": "Expected approach for Weakness.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Teamwork Question",
+    "category": "HR",
+    "subCategory": "Teamwork",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated teamwork.",
+    "explanation": "Expected approach for Teamwork.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Leadership Question",
+    "category": "HR",
+    "subCategory": "Leadership",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated leadership.",
+    "explanation": "Expected approach for Leadership.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Conflict Question",
+    "category": "HR",
+    "subCategory": "Conflict",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated conflict.",
+    "explanation": "Expected approach for Conflict.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Projects Question",
+    "category": "HR",
+    "subCategory": "Projects",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated projects.",
+    "explanation": "Expected approach for Projects.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Internship Question",
+    "category": "HR",
+    "subCategory": "Internship",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated internship.",
+    "explanation": "Expected approach for Internship.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Goals Question",
+    "category": "HR",
+    "subCategory": "Goals",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated goals.",
+    "explanation": "Expected approach for Goals.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  },
+  {
+    "title": "Company specific Question",
+    "category": "HR",
+    "subCategory": "Company specific",
+    "difficulty": "Medium",
+    "questionText": "Tell me about a time you demonstrated company specific.",
+    "explanation": "Expected approach for Company specific.",
+    "isImportant": true,
+    "companies": [
+      "All"
+    ]
+  }
+]

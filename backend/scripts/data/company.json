@@ -1,0 +1,310 @@
+[
+  {
+    "name": "TCS",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why TCS?",
+        "answer": "Because TCS is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  },
+  {
+    "name": "Infosys",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why Infosys?",
+        "answer": "Because Infosys is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  },
+  {
+    "name": "Accenture",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why Accenture?",
+        "answer": "Because Accenture is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  },
+  {
+    "name": "Cognizant",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why Cognizant?",
+        "answer": "Because Cognizant is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  },
+  {
+    "name": "Capgemini",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why Capgemini?",
+        "answer": "Because Capgemini is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  },
+  {
+    "name": "Deloitte",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why Deloitte?",
+        "answer": "Because Deloitte is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  },
+  {
+    "name": "Wipro",
+    "tier": "Tier 3 (Service)",
+    "eligibility": {
+      "minCgpa": 6.5,
+      "allowedBranches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ]
+    },
+    "hiringProcess": [
+      "Aptitude Test",
+      "Technical Interview",
+      "HR Interview"
+    ],
+    "pattern": "90 mins test: 30 Quant, 30 Logical, 30 Verbal",
+    "faqs": [
+      {
+        "question": "Why Wipro?",
+        "answer": "Because Wipro is great."
+      }
+    ],
+    "tips": [
+      "Focus on basic DSA.",
+      "Brush up on OOPS."
+    ],
+    "focus": {
+      "dsa": 4,
+      "aptitude": 8,
+      "csCore": 7,
+      "systemDesign": 1
+    },
+    "requiredSkills": [
+      "Java",
+      "SQL"
+    ],
+    "preferredProjects": [
+      "Web Dev",
+      "Management System"
+    ],
+    "salaryRange": "3.5LPA - 7LPA",
+    "difficultyLevel": 5
+  }
+]

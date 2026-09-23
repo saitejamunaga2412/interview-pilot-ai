@@ -1,0 +1,380 @@
+[
+  {
+    "title": "Arrays Basic Problem",
+    "slug": "arrays-basic",
+    "description": "A standard problem to test Arrays.",
+    "difficulty": "Medium",
+    "topics": [
+      "Arrays"
+    ],
+    "tags": [
+      "Arrays",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Strings Basic Problem",
+    "slug": "strings-basic",
+    "description": "A standard problem to test Strings.",
+    "difficulty": "Medium",
+    "topics": [
+      "Strings"
+    ],
+    "tags": [
+      "Strings",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Linked Lists Basic Problem",
+    "slug": "linked-lists-basic",
+    "description": "A standard problem to test Linked Lists.",
+    "difficulty": "Medium",
+    "topics": [
+      "Linked Lists"
+    ],
+    "tags": [
+      "Linked Lists",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Stack Basic Problem",
+    "slug": "stack-basic",
+    "description": "A standard problem to test Stack.",
+    "difficulty": "Medium",
+    "topics": [
+      "Stack"
+    ],
+    "tags": [
+      "Stack",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Queue Basic Problem",
+    "slug": "queue-basic",
+    "description": "A standard problem to test Queue.",
+    "difficulty": "Medium",
+    "topics": [
+      "Queue"
+    ],
+    "tags": [
+      "Queue",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Trees Basic Problem",
+    "slug": "trees-basic",
+    "description": "A standard problem to test Trees.",
+    "difficulty": "Medium",
+    "topics": [
+      "Trees"
+    ],
+    "tags": [
+      "Trees",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Graphs Basic Problem",
+    "slug": "graphs-basic",
+    "description": "A standard problem to test Graphs.",
+    "difficulty": "Medium",
+    "topics": [
+      "Graphs"
+    ],
+    "tags": [
+      "Graphs",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Dynamic Programming Basic Problem",
+    "slug": "dynamic-programming-basic",
+    "description": "A standard problem to test Dynamic Programming.",
+    "difficulty": "Medium",
+    "topics": [
+      "Dynamic Programming"
+    ],
+    "tags": [
+      "Dynamic Programming",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Greedy Basic Problem",
+    "slug": "greedy-basic",
+    "description": "A standard problem to test Greedy.",
+    "difficulty": "Medium",
+    "topics": [
+      "Greedy"
+    ],
+    "tags": [
+      "Greedy",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Sliding Window Basic Problem",
+    "slug": "sliding-window-basic",
+    "description": "A standard problem to test Sliding Window.",
+    "difficulty": "Medium",
+    "topics": [
+      "Sliding Window"
+    ],
+    "tags": [
+      "Sliding Window",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Binary Search Basic Problem",
+    "slug": "binary-search-basic",
+    "description": "A standard problem to test Binary Search.",
+    "difficulty": "Medium",
+    "topics": [
+      "Binary Search"
+    ],
+    "tags": [
+      "Binary Search",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Hashing Basic Problem",
+    "slug": "hashing-basic",
+    "description": "A standard problem to test Hashing.",
+    "difficulty": "Medium",
+    "topics": [
+      "Hashing"
+    ],
+    "tags": [
+      "Hashing",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Recursion Basic Problem",
+    "slug": "recursion-basic",
+    "description": "A standard problem to test Recursion.",
+    "difficulty": "Medium",
+    "topics": [
+      "Recursion"
+    ],
+    "tags": [
+      "Recursion",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  },
+  {
+    "title": "Backtracking Basic Problem",
+    "slug": "backtracking-basic",
+    "description": "A standard problem to test Backtracking.",
+    "difficulty": "Medium",
+    "topics": [
+      "Backtracking"
+    ],
+    "tags": [
+      "Backtracking",
+      "Algorithm"
+    ],
+    "companies": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "testCases": [
+      {
+        "input": "1",
+        "expectedOutput": "1"
+      }
+    ],
+    "optimalTimeComplexity": "O(N)",
+    "optimalSpaceComplexity": "O(N)",
+    "starterCode": "function solve(input) {\n  // write your code here\n}"
+  }
+]
