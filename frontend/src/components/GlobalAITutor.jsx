@@ -135,7 +135,7 @@ export default function GlobalAITutor() {
         roleSubtitle: "AI Study & Interview Assistant",
         mode: "placement_advisor",
         contextTag: "Student Profile",
-        topicId: "Profile & Target Setup",
+        topicId: "Placement Strategy & Profile",
         welcomeMsg: "Hey! I'm InterviewPilot AI. What do you want to work on?",
         suggestions: [
           "Coding",

@@ -122,12 +122,23 @@ function Navbar() {
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-indigo-800 transition cursor-pointer"
           >
             {user?.profilePhoto && !user.profilePhoto.includes("default-avatar") ? (
-              <img src={user.profilePhoto} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-indigo-500" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm">
-                {getInitials(user?.name).toUpperCase()}
-              </div>
-            )}
+              <img 
+                src={user.profilePhoto} 
+                alt="Avatar" 
+                className="w-8 h-8 rounded-full object-cover border-2 border-indigo-500" 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  if (e.target.nextSibling) {
+                    e.target.nextSibling.style.display = 'flex';
+                  }
+                }}
+              />
+            ) : null}
+            <div 
+              className={`w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm ${user?.profilePhoto && !user.profilePhoto.includes("default-avatar") ? "hidden" : ""}`}
+            >
+              {getInitials(user?.name).toUpperCase()}
+            </div>
           </button>
 
           {dropdownOpen && (

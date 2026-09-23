@@ -14,18 +14,70 @@ class AptitudeService:
     @classmethod
     async def get_topic_details(cls, topic_id: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         db = get_database()
-        topic = await db["learningtopics"].find_one({
-            "$or": [{"topicId": topic_id}, {"_id": to_object_id(topic_id)}]
-        })
+        clean_id = topic_id.lower().strip().replace(" ", "-").replace("%20", "-")
+        query_conditions = [
+            {"topicId": topic_id},
+            {"topicId": clean_id},
+            {"title": {"$regex": f"^{re.escape(topic_id)}$", "$options": "i"}},
+            {"subCategory": {"$regex": f"^{re.escape(topic_id)}$", "$options": "i"}}
+        ]
+        oid = to_object_id(topic_id)
+        if oid:
+            query_conditions.append({"_id": oid})
+
+        topic = await db["learningtopics"].find_one({"$or": query_conditions})
+        clean_title = topic_id.replace("-", " ").title()
+
         if not topic:
-            # Return basic topic fallback
             topic = {
-                "topicId": topic_id,
-                "title": topic_id.replace("-", " ").title(),
+                "topicId": clean_id,
+                "title": clean_title,
                 "category": "Aptitude",
-                "formulas": ["Speed = Distance / Time", "Time = Distance / Speed"],
-                "shortcuts": ["Relative speed in same direction = s1 - s2"]
+                "subCategory": clean_title,
+                "estimatedTimeMinutes": 35,
+                "placementImportance": f"High-yield topic frequently tested in campus recruitment rounds (TCS, Infosys, Cognizant, Wipro, Amazon).",
+                "beginnerExplanation": f"{clean_title} evaluates quantitative reasoning and problem-solving speed under competitive placement constraints.",
+                "definition": f"Core principles, mathematical models, and operational formulas for {clean_title}.",
+                "realLifeAnalogy": f"Think of {clean_title} like budgeting resources efficiently: breaking down composite problems into proportional units yields instant clarity.",
+                "coreConcepts": [
+                    {"title": "Fundamental Principles", "description": "Relating key variables and standard units of measurement."},
+                    {"title": "Ratio & Proportion Approach", "description": "Eliminating multi-step algebra by standardizing rates and baselines."}
+                ],
+                "formulas": [
+                    {"title": "Primary Formula", "formula": "Rate × Time = Total Work / Distance", "description": "Baseline relationship for speed, time, and work."},
+                    {"title": "Percentage Proportionality", "formula": "Result = Base × (1 ± r/100)", "description": "Multipliers for growth and degradation."}
+                ],
+                "coreMethods": [
+                    {"name": "Unitary Method", "description": "Compute single-unit baseline then scale up."},
+                    {"name": "Ratio Method", "description": "Direct proportional simplification."}
+                ],
+                "shortcuts": [
+                    "Check unit digits to eliminate options without solving full arithmetic.",
+                    "Use percentage approximations for complex fractional numbers."
+                ],
+                "commonMistakes": [
+                    "Forgetting to convert units (e.g. km/h to m/s by multiplying 5/18).",
+                    "Applying simple averages instead of harmonic averages for equal distance trips."
+                ],
+                "workedExamples": [
+                    {
+                        "problem": f"A standard {clean_title} problem with values A and B.",
+                        "solution": "Step 1: Identify given parameters.\nStep 2: Apply the fundamental formula.\nStep 3: Solve algebraically to obtain the final result.",
+                        "answer": "Option A"
+                    }
+                ]
             }
+        else:
+            topic["title"] = topic.get("title") or clean_title
+            topic["subCategory"] = topic.get("subCategory") or clean_title
+            topic["definition"] = topic.get("definition") or topic.get("theory") or f"Core principles of {clean_title}."
+            if not topic.get("formulas"):
+                topic["formulas"] = [
+                    {"title": "Key Formula", "formula": "Speed = Distance / Time", "description": "Standard rate formula"}
+                ]
+            if not topic.get("shortcuts"):
+                topic["shortcuts"] = ["Use ratio method for fast mental arithmetic."]
+
         return serialize_doc(topic)
 
     @classmethod

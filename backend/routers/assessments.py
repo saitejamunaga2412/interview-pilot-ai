@@ -167,3 +167,26 @@ async def get_simulation(sim_id: str, current_user: Dict[str, Any] = Depends(get
         "success": True,
         "data": res
     }
+
+@simulation_router.post("/{sim_id}/submit")
+async def submit_simulation_round(sim_id: str, payload: Dict[str, Any], current_user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = current_user["id"]
+    res = await simulation_service.submit_round(
+        user_id,
+        sim_id,
+        payload.get("roundType", ""),
+        payload.get("data", {})
+    )
+    return {
+        "success": True,
+        "data": res
+    }
+
+@simulation_router.post("/{sim_id}/complete")
+async def complete_simulation(sim_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = current_user["id"]
+    res = await simulation_service.complete_simulation(user_id, sim_id)
+    return {
+        "success": True,
+        "data": res
+    }

@@ -12,11 +12,13 @@ class GeminiProvider:
         self.timeout = settings.GEMINI_TIMEOUT
 
     def get_model_candidates(self) -> List[str]:
-        configured = settings.GEMINI_MODEL or "gemini-flash-lite-latest"
+        configured = settings.GEMINI_MODEL or "gemini-1.5-flash"
         # Strictly Gemini models only; Gemma, Groq, Ollama are completely excluded
-        candidate_list = [configured] if configured else ["gemini-flash-lite-latest"]
-        if "gemini-flash-lite-latest" not in candidate_list:
-            candidate_list.append("gemini-flash-lite-latest")
+        candidate_list = [configured] if configured else ["gemini-1.5-flash"]
+        standard_models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-2.5-flash", "gemini-flash-lite-latest"]
+        for m in standard_models:
+            if m not in candidate_list:
+                candidate_list.append(m)
         return candidate_list
 
     async def generate(self, prompt: str, is_json: bool = False) -> Dict[str, str]:
@@ -59,7 +61,10 @@ class GeminiProvider:
                                 return {"text": parts[0].get("text", "").strip(), "provider": "gemini", "model": model_name}
                     else:
                         err_msg = resp.text
-                        logger.warning(f"[GeminiProvider] Model {model_name} HTTP {resp.status_code}: {err_msg[:120]}")
+                        if resp.status_code == 401:
+                            logger.warning(f"[GeminiProvider] Model {model_name} HTTP 401: Invalid API key. Ensure GEMINI_API_KEY in backend/.env is a valid Google AI Studio key (starts with AIzaSy...).")
+                        else:
+                            logger.warning(f"[GeminiProvider] Model {model_name} HTTP {resp.status_code}: {err_msg[:120]}")
                         last_error = RuntimeError(f"Gemini {model_name} HTTP {resp.status_code}: {err_msg[:120]}")
                 except Exception as ex:
                     logger.warning(f"[GeminiProvider] Model {model_name} failed: {ex}")

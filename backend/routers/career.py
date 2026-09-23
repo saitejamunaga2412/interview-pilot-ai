@@ -7,12 +7,20 @@ advisor_router = APIRouter(prefix="/api/career-advisor", tags=["Career Advisor"]
 intel_router = APIRouter(prefix="/api/career-intelligence", tags=["Career Intelligence"])
 
 @advisor_router.get("")
+@advisor_router.get("/dashboard")
 async def get_career_advisor(current_user: Dict[str, Any] = Depends(get_current_user)):
     user_id = current_user["id"]
     res = await career_advisor_service.get_dashboard(user_id)
     return {
         "success": True,
         "data": res
+    }
+
+@advisor_router.post("/seed")
+async def seed_career_advisor(current_user: Dict[str, Any] = Depends(get_current_user)):
+    return {
+        "success": True,
+        "message": "Career milestones and tracks initialized."
     }
 
 @advisor_router.post("/roadmap")

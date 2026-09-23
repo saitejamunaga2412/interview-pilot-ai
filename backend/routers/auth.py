@@ -32,7 +32,7 @@ async def register(req: RegisterRequest):
         "name": req.name.strip(),
         "email": email_clean,
         "password": hash_password(req.password),
-        "profilePhoto": "/uploads/photos/default-avatar.png",
+        "profilePhoto": "",
         "career": {
             "targetRole": "",
             "targetCompanies": [],

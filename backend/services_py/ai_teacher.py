@@ -577,7 +577,182 @@ CRITICAL RULES:
         if "mistake" in msg:
             return "You currently have no recorded coding or aptitude mistakes in your Mistake Book. Practice in the Coding Arena to start tracking conceptual errors!"
 
+        # Python for technical interviews
+        if "python" in msg:
+            return (
+                "### 🐍 Python for Technical Interviews\n\n"
+                "Python is one of the most popular and efficient languages for placement coding rounds due to its clean syntax and extensive standard library.\n\n"
+                "### 🔑 Core Data Structures & Complexities\n"
+                "1. **`list` (Dynamic Array):**\n"
+                "   - Append / Pop from end: $O(1)$ amortized\n"
+                "   - Lookup by index: $O(1)$\n"
+                "   - Insert / Delete at arbitrary index: $O(n)$\n\n"
+                "2. **`dict` & `set` (Hash Tables):**\n"
+                "   - Average lookup, insertion, and deletion: $O(1)$\n"
+                "   - Worst-case (hash collision): $O(n)$\n\n"
+                "3. **`collections.deque` (Double-Ended Queue):**\n"
+                "   - Fast $O(1)$ `appendleft()` and `popleft()`. Essential for BFS graph and tree traversals.\n\n"
+                "4. **`heapq` (Binary Min-Heap):**\n"
+                "   - Push and Pop: $O(\\log n)$. Crucial for Top-K elements, Median in Stream, and Dijkstra's algorithm.\n\n"
+                "### 💻 Essential Python Interview Idioms\n"
+                "```python\n"
+                "from collections import defaultdict, Counter, deque\n"
+                "import heapq\n\n"
+                "# 1. Frequency counting\n"
+                "freq = Counter([1, 2, 2, 3, 3, 3])  # {3: 3, 2: 2, 1: 1}\n\n"
+                "# 2. Default dictionary (graph adjacency list)\n"
+                "graph = defaultdict(list)\n"
+                "graph['u'].append('v')\n\n"
+                "# 3. Min-heap / Priority queue\n"
+                "min_heap = []\n"
+                "heapq.heappush(min_heap, (priority, item))\n"
+                "best = heapq.heappop(min_heap)\n"
+                "```\n\n"
+                "### 💡 Pro Placement Tips\n"
+                "- Use `enumerate()` instead of `range(len(arr))` when you need both index and value.\n"
+                "- Use list comprehensions `[x for x in nums if x > 0]` for clean, pythonic filtering.\n"
+                "- Python 3 integers have arbitrary precision (no 32-bit integer overflow issues!).\n\n"
+                "Would you like to practice a specific Python coding problem, data structure, or algorithmic pattern?"
+            )
+
+        # Coding / Coding Arena / DSA
+        if any(w in msg for w in ["coding", "code", "coding arena", "problem solving", "dsa", "algorithm"]):
+            return (
+                "### 💻 Technical Coding & DSA Preparation\n\n"
+                "In placement coding rounds (e.g. Amazon, Google, TCS Digital, Infosys SP), questions revolve around recognizing standard algorithmic patterns.\n\n"
+                "### 🗺️ Top 6 High-Frequency Interview Patterns\n"
+                "1. **Two Pointers:** Opposite ends for sorted arrays (e.g., Two Sum II, Valid Palindrome) — $O(n)$ time, $O(1)$ space.\n"
+                "2. **Sliding Window:** Subarray and substring problems with contiguous elements (e.g., Longest Substring Without Repeating Characters) — $O(n)$ time.\n"
+                "3. **Fast & Slow Pointers (Floyd's Cycle):** Cycle detection in linked lists and arrays.\n"
+                "4. **Binary Search on Answer:** Searching in a monotonic search space (e.g., Koko Eating Bananas, Aggressive Cows) — $O(\\log n)$ time.\n"
+                "5. **BFS / DFS:** Level-order traversals (shortest path in unweighted graphs) and exhaustive search on trees/graphs.\n"
+                "6. **Dynamic Programming:** Overlapping subproblems and optimal substructure (e.g., 0/1 Knapsack, Coin Change, LCS).\n\n"
+                "### 🚀 Ready to Code?\n"
+                "Open the **Coding Arena** from the left navigation rail to solve problems live with our multi-language execution engine, or tell me which topic (Arrays, Strings, Trees, DP) you'd like to practice right now!"
+            )
+
+        # Aptitude & Reasoning
+        if any(w in msg for w in ["aptitude", "quantitative", "reasoning", "quant", "logical reasoning", "verbal"]):
+            return (
+                "### 🧮 Placement Aptitude & Logical Reasoning\n\n"
+                "Aptitude tests are the first elimination round for 80%+ of campus recruitment drives.\n\n"
+                "### 📚 Core Sections & Essential Formulas\n"
+                "1. **Quantitative Aptitude:**\n"
+                "   - **Time & Work:** If A takes $x$ days and B takes $y$ days, together they take $\\frac{xy}{x + y}$ days.\n"
+                "   - **Speed, Time & Distance:** Speed = $\\text{Distance}/\\text{Time}$. Convert km/h to m/s: multiply by $\\frac{5}{18}$.\n"
+                "   - **Percentages & Profit/Loss:** Gain % = $\\frac{\\text{Gain}}{\\text{Cost Price}} \\times 100$.\n"
+                "2. **Logical Reasoning:** Syllogisms, Blood Relations, Direction Sense, Coding-Decoding, Seating Arrangements.\n"
+                "3. **Verbal Ability:** Reading Comprehension, Sentence Correction, Error Spotting, Synonyms/Antonyms.\n\n"
+                "### 🎯 Recommendation\n"
+                "Visit the **Aptitude** module in the sidebar to practice timed question banks, or ask me for shortcuts on any topic (like Speed-Distance or Work problems)!"
+            )
+
+        # AI Mock Interview
+        if any(w in msg for w in ["ai interview", "mock interview", "interview prep", "interview"]):
+            return (
+                "### 🎙️ AI Mock Interview Studio\n\n"
+                "Acing interviews requires combining solid technical answers with structured communication frameworks.\n\n"
+                "### 🏆 The Winning Frameworks\n"
+                "1. **Behavioral Questions (The STAR Method):**\n"
+                "   - **Situation:** Set the scene and context.\n"
+                "   - **Task:** What was your specific responsibility?\n"
+                "   - **Action:** Exactly what steps did YOU take (technologies, decisions)?\n"
+                "   - **Result:** Quantifiable outcome (e.g., 'reduced latency by 35%').\n\n"
+                "2. **Technical Problem Solving in Interviews:**\n"
+                "   - Step 1: Clarify constraints (input size, negative numbers, space limits).\n"
+                "   - Step 2: Propose the brute force solution and state its complexity.\n"
+                "   - Step 3: Optimize using suitable data structures before writing code.\n"
+                "   - Step 4: Write clean, modular code with descriptive variable names.\n"
+                "   - Step 5: Dry-run with an edge case (empty array, single element).\n\n"
+                "### 🚀 Practice Now\n"
+                "Head over to **AI Interview** in the sidebar to start a real-time 15, 30, or 45-minute timed interview simulation tailored to your target role!"
+            )
+
+        # Resume & ATS
+        if any(w in msg for w in ["resume", "ats", "cv"]):
+            return (
+                "### 📄 ATS Resume Optimization Strategy\n\n"
+                "Applicant Tracking Systems (ATS) scan resumes for keyword density, formatting simplicity, and relevant experience before a human recruiter sees them.\n\n"
+                "### 🔑 ATS Best Practices\n"
+                "1. **Single-Column Layout:** Multi-column tables and complex graphics often fail ATS text parsers.\n"
+                "2. **Impact-Driven Bullet Points (XYZ Formula):**\n"
+                "   - *Accomplished [X], as measured by [Y], by doing [Z].*\n"
+                "   - *Example:* 'Optimized API response time by 40% (from 800ms to 480ms) by implementing Redis caching and indexing MongoDB collections.'\n"
+                "3. **Keywords & Skills:** Include explicit skills matching the job description (e.g., Python, FastAPI, Docker, PostgreSQL, React).\n"
+                "4. **Standard Section Headers:** Use standard headers: 'Education', 'Technical Skills', 'Experience', 'Projects', 'Certifications'.\n\n"
+                "### 🚀 Next Step\n"
+                "Upload your resume to our **Resume ATS Analyzer** from the sidebar to get your instant match score and missing keyword analysis!"
+            )
+
+        # Study Plan / Placement Strategy
+        if any(w in msg for w in ["study plan", "roadmap", "schedule", "how to prepare", "strategy"]):
+            return (
+                "### 📅 Comprehensive Placement Study Plan\n\n"
+                "Here is an optimal structured roadmap to reach placement readiness:\n\n"
+                "### ⏱️ Recommended Daily Routine\n"
+                "- **60% DSA & Coding Practice:** 2–3 problems daily (1 Easy, 1 Medium, revise past mistakes).\n"
+                "- **20% CS Fundamentals:** Alternate daily between DBMS, Operating Systems, Computer Networks, and OOP.\n"
+                "- **20% Aptitude & Communication:** 10 quantitative/reasoning questions daily + 1 STAR behavioral story rehearsal.\n\n"
+                "### 🗺️ 3-Phase Progression\n"
+                "1. **Phase 1 (Foundations):** Arrays, Strings, Hash Maps, Two Pointers, Linked Lists.\n"
+                "2. **Phase 2 (Intermediate):** Stacks/Queues, Binary Search, Trees, Heaps, DBMS SQL & Transactions.\n"
+                "3. **Phase 3 (Advanced & Mocks):** Graphs, DP, System Design basics, full-length timed mock interviews.\n\n"
+                "Tell me your target companies and graduation year, and I can customize this roadmap for your exact timeline!"
+            )
+
+        # Java
+        if "java" in msg:
+            return (
+                "### ☕ Java for Placement Coding\n\n"
+                "Java is widely tested in service-based and product-based companies (TCS, Infosys, Morgan Stanley, Goldman Sachs).\n\n"
+                "- **Collections Framework:** `ArrayList`, `LinkedList`, `HashMap`, `HashSet`, `PriorityQueue` (Min-heap by default).\n"
+                "- **String Immutability:** Always use `StringBuilder` for frequent string concatenations inside loops to prevent $O(n^2)$ memory overhead.\n"
+                "- **Key Concept:** Know the difference between `Comparable` (natural ordering via `compareTo`) and `Comparator` (custom sorting logic via `compare`)."
+            )
+
+        # C++
+        if "c++" in msg or "cpp" in msg:
+            return (
+                "### ⚡ C++ STL for Competitive Programming & Placements\n\n"
+                "C++ is prized for its execution speed and rich Standard Template Library (STL).\n\n"
+                "- **Vectors:** Dynamic array with $O(1)$ amortized `push_back()`.\n"
+                "- **Unordered Map vs Map:** `unordered_map` is hash-table based ($O(1)$ average), while `map` is Red-Black Tree based ($O(\\log n)$ ordered).\n"
+                "- **Priority Queue:** `priority_queue<int>` is a max-heap by default. For min-heap, use `priority_queue<int, vector<int>, greater<int>>`.\n"
+                "- **Fast I/O:** `ios_base::sync_with_stdio(false); cin.tie(NULL);` prevents TLE in coding tests."
+            )
+
+        # Operating Systems / OS
+        if "operating system" in msg or msg == "os" or "process" in msg and "thread" in msg:
+            return (
+                "### 💻 Operating Systems Fundamentals for Placements\n\n"
+                "Operating Systems is a core placement interview subject across all tier-1 and tier-2 companies.\n\n"
+                "- **Process vs Thread:** A process is an executing program with independent address space; a thread is a lightweight execution unit sharing the process memory.\n"
+                "- **Deadlock Conditions (Coffman Conditions):** Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait.\n"
+                "- **CPU Scheduling:** FCFS, SJF, Round Robin (time quantum), Priority Scheduling.\n"
+                "- **Virtual Memory & Paging:** Translates logical addresses to physical addresses using page tables; page replacement algorithms include LRU, FIFO, and Optimal."
+            )
+
+        # Dynamic Programming
+        if "dynamic programming" in msg or "dp" in msg:
+            return (
+                "### 🧩 Dynamic Programming (DP) Strategy\n\n"
+                "Dynamic programming optimizes recursive solutions by storing intermediate subproblem results.\n\n"
+                "### 2 Key Prerequisites:\n"
+                "1. **Overlapping Subproblems:** Same subproblems are calculated repeatedly.\n"
+                "2. **Optimal Substructure:** Optimal solution can be constructed from optimal subproblem solutions.\n\n"
+                "### Approaches:\n"
+                "- **Top-Down (Memoization):** Start with recursion and cache results in an array/map.\n"
+                "- **Bottom-Up (Tabulation):** Start from base cases and iteratively build up the table (often allows space optimization from $O(n)$ to $O(1)$).\n\n"
+                "**Top 5 DP Patterns:** 0/1 Knapsack, Longest Common Subsequence (LCS), Longest Increasing Subsequence (LIS), Matrix Chain Multiplication, DP on Trees."
+            )
+
+        # General intelligent fallback
+        clean_topic = message.strip()
         return (
-            f"I'm here to help with your placement preparation for **{topic_id or 'your upcoming interviews'}**.\n\n"
-            f"What specific concept, coding problem, or interview topic would you like to work on right now?"
+            f"Regarding **'{clean_topic}'**:\n\n"
+            f"I'm here to help you master this for your upcoming placement rounds! We can explore:\n"
+            f"- 💡 **Core Theory & Concepts:** Key definitions and mental models.\n"
+            f"- 💻 **Coding Practice:** Implementation, edge cases, and time/space complexity.\n"
+            f"- 🎙️ **Interview Questions:** High-frequency technical and conceptual questions asked by top tech firms.\n\n"
+            f"What specific question or subtopic in **{clean_topic}** would you like to start with?"
         )

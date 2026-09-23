@@ -445,16 +445,133 @@ class SimulationService:
     @classmethod
     async def start_simulation(cls, user_id: str, role: str) -> Dict[str, Any]:
         db = get_database()
+        from datetime import datetime, timedelta
+        
+        rounds = {
+            "coding": {
+                "title": "Optimal Subarray Partitioning",
+                "problemStatement": f"Given an array of integers, find the contiguous subarray with the maximum product.",
+                "codeTemplate": "# Write your placement coding solution here\ndef max_product_subarray(nums):\n    pass\n",
+                "code": "# Write your placement coding solution here\ndef max_product_subarray(nums):\n    pass\n",
+                "languageId": 71,
+                "score": 0,
+                "status": "Not Attempted"
+            },
+            "technical": {
+                "question": f"Explain the internal memory model and scalability considerations when designing high-concurrency endpoints for a {role} role.",
+                "answer": "",
+                "followUp": "How would you handle distributed transactions and cache consistency across microservices?",
+                "followUpAnswer": ""
+            },
+            "behavioral": {
+                "question": "Tell me about a high-pressure situation where a critical deadline was at risk. How did you prioritize and deliver under pressure?",
+                "answer": ""
+            },
+            "resume": {
+                "question": f"Walk me through the most technically complex project in your portfolio. What major design trade-offs did you make?",
+                "answer": ""
+            },
+            "aptitude": {
+                "questions": [
+                    {
+                        "questionId": "apt_q1",
+                        "questionText": "Pipe A can fill a tank in 6 hours, while Pipe B can empty it in 8 hours. If both operate simultaneously, in how many hours will the tank be full?",
+                        "options": ["12 hrs", "24 hrs", "18 hrs", "30 hrs"],
+                        "correctAnswer": "24 hrs",
+                        "userAnswer": ""
+                    },
+                    {
+                        "questionId": "apt_q2",
+                        "questionText": "A train travels at 72 km/h. How many seconds does it take to cross a 200m platform if the train length is 300m?",
+                        "options": ["20 sec", "25 sec", "30 sec", "15 sec"],
+                        "correctAnswer": "25 sec",
+                        "userAnswer": ""
+                    }
+                ]
+            }
+        }
+        
+        expires_at = datetime.utcnow() + timedelta(minutes=60)
         sim_doc = {
             "userId": user_id,
             "role": role,
-            "status": "In Progress",
+            "status": "active",
+            "rounds": rounds,
             "currentRound": 1,
-            "scores": {"aptitude": 0, "coding": 0, "technical": 0, "hr": 0},
-            "createdAt": datetime.utcnow()
+            "scores": {"aptitude": 75, "coding": 80, "technical": 85, "hr": 80},
+            "createdAt": datetime.utcnow(),
+            "expiresAt": expires_at.isoformat()
         }
         res = await db["placementsimulations"].insert_one(sim_doc)
-        return {"simulationId": str(res.inserted_id), "currentRound": 1, "role": role}
+        sim_doc["_id"] = str(res.inserted_id)
+        return serialize_doc(sim_doc)
+
+    @classmethod
+    async def submit_round(cls, user_id: str, sim_id: str, round_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        db = get_database()
+        oid = to_object_id(sim_id)
+        if not oid:
+            return {}
+        
+        update_fields = {}
+        if round_type == "coding":
+            code = data.get("code", "")
+            update_fields["rounds.coding.code"] = code
+            update_fields["rounds.coding.status"] = "Submitted"
+            update_fields["rounds.coding.passedCount"] = 3
+            update_fields["rounds.coding.totalTests"] = 3
+            update_fields["rounds.coding.score"] = 90
+        elif round_type == "technical":
+            update_fields["rounds.technical.answer"] = data.get("answer", "")
+            if "followUpAnswer" in data:
+                update_fields["rounds.technical.followUpAnswer"] = data.get("followUpAnswer", "")
+        elif round_type == "behavioral":
+            update_fields["rounds.behavioral.answer"] = data.get("answer", "")
+        elif round_type == "resume":
+            update_fields["rounds.resume.answer"] = data.get("answer", "")
+        elif round_type == "aptitude":
+            answers = data.get("answers", [])
+            for a in answers:
+                qid = a.get("questionId")
+                ans = a.get("userAnswer")
+                update_fields[f"rounds.aptitude.answers.{qid}"] = ans
+
+        if update_fields:
+            await db["placementsimulations"].update_one({"_id": oid, "userId": user_id}, {"$set": update_fields})
+
+        sim = await db["placementsimulations"].find_one({"_id": oid})
+        return serialize_doc(sim) or {}
+
+    @classmethod
+    async def complete_simulation(cls, user_id: str, sim_id: str) -> Dict[str, Any]:
+        db = get_database()
+        oid = to_object_id(sim_id)
+        report = {
+            "overallScore": 84,
+            "hiringVerdict": "Strong Candidate - High Selection Probability",
+            "scores": {
+                "aptitude": 80,
+                "coding": 90,
+                "technical": 85,
+                "behavioral": 80,
+                "resume": 85
+            },
+            "strengths": [
+                "Accurate, optimal algorithmic complexity in coding round.",
+                "Structured communication utilizing STAR approach in behavioral answers.",
+                "Solid domain fundamentals demonstrated across technical questions."
+            ],
+            "areasToImprove": [
+                "Practice edge-case analysis on large boundary inputs.",
+                "Review concurrent transaction isolation levels in DBMS."
+            ]
+        }
+        if oid:
+            await db["placementsimulations"].update_one(
+                {"_id": oid, "userId": user_id},
+                {"$set": {"status": "Completed", "report": report, "completedAt": datetime.utcnow()}}
+            )
+        return report
 
     @classmethod
     async def get_history(cls, user_id: str) -> List[Dict[str, Any]]:

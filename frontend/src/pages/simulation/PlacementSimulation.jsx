@@ -95,15 +95,16 @@ export default function PlacementSimulation() {
 
   const initActiveSimulation = (sim) => {
     setActiveSim(sim);
-    setCode(sim.rounds.coding?.code || sim.rounds.coding?.codeTemplate || "// Write your solution here\n");
-    setLanguageId(sim.rounds.coding?.languageId || 63);
-    setTechAnswer(sim.rounds.technical?.answer || "");
-    setTechFollowUpAnswer(sim.rounds.technical?.followUpAnswer || "");
-    setBehavioralAnswer(sim.rounds.behavioral?.answer || "");
-    setResumeAnswer(sim.rounds.resume?.answer || "");
+    const rounds = sim?.rounds || {};
+    setCode(rounds.coding?.code || rounds.coding?.codeTemplate || "// Write your solution here\n");
+    setLanguageId(rounds.coding?.languageId || 63);
+    setTechAnswer(rounds.technical?.answer || "");
+    setTechFollowUpAnswer(rounds.technical?.followUpAnswer || "");
+    setBehavioralAnswer(rounds.behavioral?.answer || "");
+    setResumeAnswer(rounds.resume?.answer || "");
 
     const existingApt = {};
-    sim.rounds.aptitude?.questions?.forEach(q => {
+    rounds.aptitude?.questions?.forEach(q => {
       if (q.userAnswer) existingApt[q.questionId] = q.userAnswer;
     });
     setAptitudeAnswers(existingApt);

@@ -83,11 +83,12 @@ export default function TopicLearningPage() {
       ]);
 
       const data = topicRes.data?.data || topicRes.data;
-      setTopicData(data.topic);
-      setUserProgress(data.progress);
+      const resolvedTopic = data?.topic || data;
+      setTopicData(resolvedTopic);
+      setUserProgress(data?.progress || null);
       setActiveTarget(targetRes.data?.data || targetRes.data || null);
 
-      if (data.progress?.highestDifficultyUnlocked) {
+      if (data?.progress?.highestDifficultyUnlocked) {
         setPracticeDifficulty(data.progress.highestDifficultyUnlocked);
       }
     } catch (err) {

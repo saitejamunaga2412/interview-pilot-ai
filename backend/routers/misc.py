@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from typing import Dict, Any, Optional
 from core.database import get_database, serialize_doc, to_object_id
 from core.config import settings
-from core.security import get_current_user
+from core.security import get_current_user, get_optional_user
 from services_py.email_service import email_service
 from services_py.scheduler import get_scheduler_status
 
@@ -41,10 +41,62 @@ async def get_health():
 
 # 2. Exam Patterns
 @misc_router.get("/api/exam-patterns")
+@misc_router.get("/api/exam-patterns/patterns")
 async def get_exam_patterns():
     db = get_database()
     patterns = await db["exampatterns"].find({}).to_list(50)
     return {"success": True, "data": serialize_doc(patterns)}
+
+@misc_router.get("/api/exam-patterns/targets/active")
+async def get_active_exam_target(optional_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
+    from core.database import get_database, serialize_doc
+    user_id = optional_user["id"] if optional_user else None
+    db = get_database()
+    target = None
+    if user_id:
+        target = await db["usertargets"].find_one({"userId": user_id, "isActive": True})
+    return {
+        "success": True,
+        "data": serialize_doc(target) if target else {
+            "targetName": "TCS NQT 2026",
+            "examName": "TCS NQT",
+            "targetReadinessScore": 75,
+            "examDate": "2026-10-15"
+        }
+    }
+
+@misc_router.post("/api/exam-patterns/targets")
+async def save_exam_target(payload: Dict[str, Any], current_user: Dict[str, Any] = Depends(get_current_user)):
+    from core.database import get_database, serialize_doc
+    from datetime import datetime
+    db = get_database()
+    user_id = current_user["id"]
+    await db["usertargets"].update_many({"userId": user_id}, {"$set": {"isActive": False}})
+    doc = {**payload, "userId": user_id, "isActive": True, "createdAt": datetime.utcnow()}
+    res = await db["usertargets"].insert_one(doc)
+    doc["_id"] = str(res.inserted_id)
+    return {"success": True, "data": serialize_doc(doc)}
+
+@misc_router.post("/api/exam-patterns/targets/custom")
+async def save_custom_exam_target(payload: Dict[str, Any], current_user: Dict[str, Any] = Depends(get_current_user)):
+    from core.database import get_database, serialize_doc
+    from datetime import datetime
+    db = get_database()
+    user_id = current_user["id"]
+    await db["usertargets"].update_many({"userId": user_id}, {"$set": {"isActive": False}})
+    doc = {**payload, "userId": user_id, "isActive": True, "isCustom": True, "createdAt": datetime.utcnow()}
+    res = await db["usertargets"].insert_one(doc)
+    doc["_id"] = str(res.inserted_id)
+    return {"success": True, "data": serialize_doc(doc)}
+
+@misc_router.get("/api/exam-patterns/similar-question/{topic_id}")
+async def get_similar_question(topic_id: str, questionId: Optional[str] = None):
+    from core.database import get_database, serialize_doc
+    db = get_database()
+    q = await db["questions"].find_one({"topic": {"$regex": topic_id, "$options": "i"}})
+    if not q:
+        q = await db["questions"].find_one({})
+    return {"success": True, "data": serialize_doc(q)}
 
 # 3. User Actions (Notes & Bookmarks)
 @misc_router.get("/api/user-actions/notes")
