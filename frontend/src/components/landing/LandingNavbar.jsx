@@ -9,11 +9,10 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
 
 const navLinks = [
-  { label: "Product", href: "#placement-engine" },
-  { label: "How It Works", href: "#placement-journey" },
-  { label: "AI Engine", href: "#ai-pipeline" },
-  { label: "Pillars", href: "#preparation-pillars" },
-  { label: "Interactive Demo", href: "#interactive-studio" },
+  { label: "Features", href: "#features" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "Preparation Journey", href: "#journey" },
+  { label: "About", href: "#about" },
 ];
 
 export default function LandingNavbar() {
@@ -44,39 +43,39 @@ export default function LandingNavbar() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "py-3 bg-surface/85 backdrop-blur-xl border-b border-border/80 shadow-lg shadow-black/20"
+            ? "py-3 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-border/70 shadow-xl shadow-black/30"
             : "py-5 bg-transparent border-b border-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Brand Identity */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 via-indigo-500 to-cyan-500 flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-primary-500/25 group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
               IP
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-text-primary">
+                <span className="font-bold text-base tracking-tight text-white">
                   InterviewPilot
                 </span>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-primary-500/15 text-primary-400 border border-primary-500/30">
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
                   AI
                 </span>
               </div>
               <span className="block text-[10px] text-text-muted font-mono tracking-wider uppercase -mt-0.5">
-                AI-powered placement preparation
+                AI Placement Operating System
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-surface-2/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/60">
+          <nav className="hidden md:flex items-center gap-1 bg-[#111726]/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-border/70 shadow-inner">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleScrollTo(e, link.href)}
-                className="px-3.5 py-1.5 rounded-full text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+                className="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all"
               >
                 {link.label}
               </a>
@@ -99,7 +98,7 @@ export default function LandingNavbar() {
                 <button
                   type="button"
                   onClick={logout}
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:text-rose-400 hover:bg-rose-500/10 transition-colors border border-transparent cursor-pointer"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
@@ -107,28 +106,26 @@ export default function LandingNavbar() {
 
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 shadow-md shadow-primary-500/20 active:scale-95 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:opacity-95 shadow-md shadow-indigo-500/20 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span>Go to Dashboard</span>
+                  <span>Dashboard</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </>
             ) : (
               <>
-                {/* Sign In */}
                 <Link
                   to="/login"
-                  className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors border border-transparent cursor-pointer"
+                  className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                 >
-                  Sign In
+                  Login
                 </Link>
 
-                {/* Primary Action */}
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 shadow-md shadow-primary-500/20 active:scale-95 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:opacity-95 shadow-md shadow-indigo-500/25 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span>Start Preparing</span>
+                  <span>Get Started</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </>
@@ -137,7 +134,7 @@ export default function LandingNavbar() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-hover cursor-pointer"
+              className="md:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -149,64 +146,41 @@ export default function LandingNavbar() {
       {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden"
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 240 }}
-              className="fixed top-0 right-0 bottom-0 w-72 bg-surface border-l border-border z-50 p-6 flex flex-col justify-between md:hidden shadow-2xl"
-            >
-              <div>
-                <div className="flex items-center justify-between pb-6 border-b border-border">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xs">
-                      IP
-                    </div>
-                    <span className="font-bold text-sm text-text-primary">InterviewPilot AI</span>
-                  </div>
-                  <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 top-16 z-40 bg-[#0B0F19]/95 border-b border-border/80 backdrop-blur-2xl p-6 md:hidden shadow-2xl"
+          >
+            <nav className="flex flex-col gap-3">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleScrollTo(e, link.href)}
+                  className="px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
 
-                <nav className="py-6 space-y-2">
-                  {navLinks.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      onClick={(e) => handleScrollTo(e, link.href)}
-                      className="block px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </nav>
-              </div>
-
-              <div className="space-y-3 pt-6 border-t border-border">
+              <div className="pt-4 border-t border-border/60 flex flex-col gap-2">
                 {isAuthenticated ? (
                   <>
                     <Link
                       to="/dashboard"
-                      className="w-full py-2.5 px-4 rounded-xl text-center text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-indigo-600 block shadow-md shadow-primary-500/20"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 shadow-md"
                     >
-                      Go to Dashboard
+                      Dashboard
                     </Link>
                     <button
-                      type="button"
-                      onClick={() => { setMobileMenuOpen(false); logout(); }}
-                      className="w-full py-2.5 px-4 rounded-xl text-center text-sm font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 block cursor-pointer"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-center py-3 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors"
                     >
                       Sign Out
                     </button>
@@ -215,21 +189,23 @@ export default function LandingNavbar() {
                   <>
                     <Link
                       to="/login"
-                      className="w-full py-2.5 px-4 rounded-xl text-center text-sm font-semibold text-text-primary bg-surface-2 border border-border block"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
                     >
-                      Sign In
+                      Login
                     </Link>
                     <Link
                       to="/register"
-                      className="w-full py-2.5 px-4 rounded-xl text-center text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-indigo-600 block shadow-md shadow-primary-500/20"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 shadow-md"
                     >
-                      Initialize Candidate Account
+                      Get Started
                     </Link>
                   </>
                 )}
               </div>
-            </motion.div>
-          </>
+            </nav>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

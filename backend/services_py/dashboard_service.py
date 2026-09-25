@@ -12,20 +12,22 @@ class IntelligenceService:
         db = get_database()
         user_oid = to_object_id(user_id)
 
-        user, submissions, interviews, progress, assessments, unresolved_mistakes = await asyncio.gather(
+        user, submissions, interviews, progress, assessments, unresolved_mistakes, latest_resume_analysis, user_projects = await asyncio.gather(
             db["users"].find_one({"_id": user_oid}),
             db["submissions"].find({"userId": user_id}).to_list(100),
             db["interviewsessions"].find({"userId": user_id}).to_list(50),
             db["learningprogresses"].find({"user": user_oid}).to_list(50),
             db["assessmentattempts"].find({"userId": user_id}).to_list(50),
-            db["mistakes"].find({"userId": user_id, "resolved": False}).sort("attemptCount", -1).to_list(10)
+            db["mistakes"].find({"userId": user_id, "resolved": False}).sort("attemptCount", -1).to_list(10),
+            db["resumeanalyses"].find_one({"userId": user_id}, sort=[("createdAt", -1)]),
+            db["projects"].find({"userId": user_id}).to_list(50)
         )
 
-        has_resume = bool(user and (user.get("career", {}).get("resumeUrl") or user.get("resumeData")))
+        has_resume = bool(latest_resume_analysis or (user and (user.get("career", {}).get("resumeUrl") or user.get("resumeData"))))
         accepted_count = sum(1 for s in submissions if s.get("status") == "Accepted")
 
         # Has user performed ANY measurable activity?
-        has_activity = bool(submissions or interviews or assessments or progress or unresolved_mistakes)
+        has_activity = bool(submissions or interviews or assessments or progress or unresolved_mistakes or latest_resume_analysis or user_projects)
 
         # 1. Coding (30%)
         coding_score = 0
@@ -55,7 +57,9 @@ class IntelligenceService:
 
         # 5. Resume (10%)
         resume_score = 0
-        if has_resume:
+        if latest_resume_analysis:
+            resume_score = latest_resume_analysis.get("overallScore", 0)
+        elif has_resume:
             resume_score = 75
             skills = user.get("resumeData", {}).get("skills", [])
             if len(skills) >= 5: resume_score += 15

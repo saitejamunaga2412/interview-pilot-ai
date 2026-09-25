@@ -87,6 +87,8 @@ async def ensure_indexes():
         await db["assessmentattempts"].create_index("userId")
         await db["assessmentattempts"].create_index([("userId", 1), ("status", 1)])
         await db["questions"].create_index([("topicId", 1), ("category", 1)])
+        await db["resumeanalyses"].create_index([("userId", 1), ("createdAt", -1)])
+        await db["projects"].create_index([("userId", 1), ("createdAt", -1)])
         logger.info("[MongoDB] Production indexes verified.")
     except Exception as ex:
         logger.warning(f"[MongoDB] Index creation notice: {ex}")

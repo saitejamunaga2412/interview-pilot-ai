@@ -24,7 +24,9 @@ USER_SCOPED_COLLECTIONS = [
     "topicprogresses",
     "usernotes",
     "usertargets",
-    "notifications"
+    "notifications",
+    "resumeanalyses",
+    "projects"
 ]
 
 def calculate_profile_completion(user: Dict[str, Any]) -> int:

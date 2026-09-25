@@ -1,144 +1,150 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { 
-  Bot, Sparkles, Brain, Cpu, Database, 
-  ArrowRight, ShieldCheck, Zap, GitBranch, Layers 
+  Bot, CheckCircle2, AlertTriangle, ArrowRight, 
+  Sparkles, Layers, BookOpen, MessageSquare, Terminal, Award
 } from "lucide-react";
 
 export default function LandingAIPipeline() {
-  const pipelineNodes = [
-    {
-      id: "input",
-      title: "Practice Actions",
-      icon: Layers,
-      items: ["Aptitude Quiz Attempt", "Code Editor Submissions", "AI Mock Interview Audio"],
-      badge: "Real-time Progress"
-    },
-    {
-      id: "diag",
-      title: "Diagnostic Engine",
-      icon: Cpu,
-      items: ["Error Taxonomy Classification", "Time & Space Profiling", "Rubric Multi-Axis Analysis"],
-      badge: "Pattern Diagnosis"
-    },
-    {
-      id: "memory",
-      title: "Global AI Memory Graph",
-      icon: Database,
-      items: ["Weak Concept Clustering", "Spaced Repetition Scheduler (1d, 3d, 7d)", "Target Role Skill Graph"],
-      badge: "Persistent Memory"
-    },
-    {
-      id: "output",
-      title: "Adaptive Daily Plan",
-      icon: Brain,
-      items: ["Personalized Daily Study Plan", "Instant Mistake Revision Queue", "Readiness Progress Tracking"],
-      badge: "Dynamic Guidance"
-    }
-  ];
-
   return (
-    <section id="ai-pipeline" className="py-24 bg-bg-base relative overflow-hidden">
-      
-      {/* Background Neural Grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(#1e2c44_1px,transparent_1px)] [background-size:28px_28px] opacity-30 pointer-events-none" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+    <section className="py-24 bg-[#090D18] border-t border-border/60 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[600px] h-[400px] bg-purple-600/5 rounded-full blur-[140px] pointer-events-none -z-10" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-border text-xs font-mono text-primary-400 mb-4">
+        <div className="max-w-3xl mb-16 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111728] border border-purple-500/30 text-xs font-mono text-purple-400 mb-4">
             <Bot className="w-3.5 h-3.5" />
-            <span>Autonomous Intelligence Architecture</span>
+            <span>AI Mock Interview Studio</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-text-primary mb-4">
-            Your Preparation Gets Smarter as You Practice.
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
+            Practice Real Technical & Behavioral Rounds
           </h2>
-          <p className="text-text-secondary text-base sm:text-lg">
-            Unlike static question banks, InterviewPilot maintains a synchronized memory graph of every concept you touch, 
-            identifying exactly why you missed a problem and adapting your daily plan.
+          <p className="text-slate-400 text-sm sm:text-base mt-4 leading-relaxed">
+            Experience role-specific interview simulations with deep technical evaluation. Every response receives structured, actionable feedback designed to help you clear real technical screenings.
           </p>
         </div>
 
-        {/* ── Visual Architecture Pipeline Flow ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative mb-16">
-          {pipelineNodes.map((node, idx) => {
-            const Icon = node.icon;
-            return (
-              <div
-                key={node.id}
-                className="p-6 rounded-2xl border border-border bg-surface/90 backdrop-blur-md relative flex flex-col justify-between group hover:border-primary-500/50 hover:shadow-lg transition-all"
-              >
-                {/* Node Connector Line for Desktop */}
-                {idx < pipelineNodes.length - 1 && (
-                  <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-primary-400/60 font-bold">
-                    <ArrowRight className="w-5 h-5 animate-pulse" />
+        {/* Two-column layout: Mock interview simulation on left, Structured Feedback Rubric on right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          {/* LEFT: Interview Dialogue Simulator Card */}
+          <div className="lg:col-span-6 rounded-2xl bg-[#0E1322]/90 border border-border/70 p-6 sm:p-8 flex flex-col justify-between shadow-xl">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
+                    <Bot className="w-5 h-5" />
                   </div>
-                )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-surface-2 border border-border flex items-center justify-center text-primary-400 group-hover:scale-105 transition-transform">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-primary-500/10 text-primary-400 border border-primary-500/20 font-bold">
-                      {node.badge}
-                    </span>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">AI Technical Interviewer</h3>
+                    <p className="text-[11px] text-slate-400">Target: Backend Engineer &middot; System Design</p>
                   </div>
-
-                  <h3 className="text-base font-bold text-text-primary mb-3">
-                    {node.title}
-                  </h3>
-
-                  <ul className="space-y-2">
-                    {node.items.map((item) => (
-                      <li key={item} className="text-xs text-text-secondary flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary-400/80 mt-1.5 shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-
-                <div className="mt-6 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-mono text-text-muted">
-                  <span>Stage 0{idx + 1}</span>
-                  <span className="text-emerald-400">Live Synced</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── Strict AI Teacher Sequence Callout ── */}
-        <div className="p-6 sm:p-8 rounded-2xl border border-primary-500/30 bg-surface-2/70 backdrop-blur-md">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary-400 animate-ping" />
-                <span className="text-xs font-mono font-bold text-primary-400 uppercase tracking-wider">
-                  The AI Teacher Pedagogical Framework
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  SESSION ACTIVE
                 </span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-text-primary">
-                Strict 13-Point Teaching Sequence for Every Concept
-              </h3>
-              <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
-                When you ask a question or review a mistake, the AI Teacher never gives vague summaries. It follows a disciplined sequence:
-                <strong className="text-text-primary"> Definition → Why it Matters → Real-World Analogy → Step-by-Step Logic → Visual Dry Run → Code Implementation → Complexity Proof → Common Interview Pitfalls.</strong>
-              </p>
+
+              {/* Chat snippet */}
+              <div className="space-y-4 text-xs font-sans">
+                {/* AI prompt */}
+                <div className="p-4 rounded-xl bg-[#141B2E] border border-border/60 text-slate-200 space-y-1">
+                  <p className="text-[11px] font-semibold text-purple-300">Interviewer Question:</p>
+                  <p className="leading-relaxed">
+                    "How would you handle cache stampede (thundering herd problem) in a high-traffic microservices architecture when a popular Redis key expires?"
+                  </p>
+                </div>
+
+                {/* Candidate response snippet */}
+                <div className="p-4 rounded-xl bg-[#0B0F19] border border-border/40 text-slate-300 space-y-1 ml-4">
+                  <p className="text-[11px] font-semibold text-cyan-400">Candidate Response:</p>
+                  <p className="leading-relaxed italic text-slate-300">
+                    "I would use mutex locking (distributed locks with Redis Redlock) so only one worker thread regenerates the cache from the database, while other requests wait or receive stale data."
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="px-4 py-3 rounded-xl bg-surface border border-border text-center shrink-0 w-full lg:w-auto">
-              <span className="text-xs font-mono text-text-muted block">Debugging Assistant Rule</span>
-              <span className="text-sm font-bold text-text-primary mt-0.5 block">Progressive Hints First</span>
-              <span className="text-[11px] text-text-secondary mt-1 block">Forces active problem solving</span>
+            <div className="mt-8 pt-4 border-t border-border/40 flex items-center justify-between">
+              <span className="text-xs text-slate-400">Evaluates depth, trade-offs, and communication clarity</span>
+              <Link
+                to="/interview"
+                className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+              >
+                Try Interview &rarr;
+              </Link>
             </div>
           </div>
+
+          {/* RIGHT: Structured Multi-Point Feedback breakdown */}
+          <div className="lg:col-span-6 rounded-2xl bg-[#0E1322]/90 border border-purple-500/30 p-6 sm:p-8 space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                  Structured AI Candidate Feedback
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
+                Score: 8.5 / 10
+              </span>
+            </div>
+
+            {/* Structured feedback items */}
+            <div className="space-y-4">
+              {/* What went well */}
+              <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>What You Did Well</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed pl-5">
+                  Correctly identified distributed mutex locks as an effective mitigation strategy and mentioned serving stale cache while recomputing.
+                </p>
+              </div>
+
+              {/* What was missing */}
+              <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>What Was Missing</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed pl-5">
+                  Did not discuss probabilistic early expiration (XFetch algorithm) or adding random jitter to TTLs to prevent synchronized expirations.
+                </p>
+              </div>
+
+              {/* Suggested Answer Structure */}
+              <div className="p-3.5 rounded-xl bg-indigo-500/5 border border-indigo-500/20 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-400">
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Suggested Answer Structure</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed pl-5">
+                  1. Define the risk &rarr; 2. Primary mitigation (TTL jitter + Mutex lock) &rarr; 3. Advanced strategy (probabilistic recomputation) &rarr; 4. Trade-off analysis.
+                </p>
+              </div>
+
+              {/* Concepts to Revise */}
+              <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-400">
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Recommended Revision Topics</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed pl-5">
+                  Distributed Caching Patterns &middot; Redis Locks &middot; Cache-Aside Architecture.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
       </div>
-
     </section>
   );
 }

@@ -11,6 +11,14 @@ export function useResumeData() {
   const [uploading, setUploading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // ATS State
+  const [atsAnalysis, setAtsAnalysis] = useState(null);
+  const [atsHistory, setAtsHistory] = useState([]);
+  const [atsLoading, setAtsLoading] = useState(false);
+  const [atsAnalyzing, setAtsAnalyzing] = useState(false);
+  const [atsStep, setAtsStep] = useState(0);
+  const [atsError, setAtsError] = useState(null);
+
   // Toast setup
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
@@ -37,16 +45,46 @@ export function useResumeData() {
         setUploadedAt(payload.uploadedAt ? new Date(payload.uploadedAt) : null);
       }
     } catch (err) {
-      console.error(err);
-      // No resume uploaded yet is fine, don't show an error
+      console.error("Resume fetch notice:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const fetchLatestAts = useCallback(async () => {
+    try {
+      setAtsLoading(true);
+      setAtsError(null);
+      const res = await API.get("/resume/ats/latest");
+      const data = res.data?.data;
+      if (data) {
+        setAtsAnalysis(data);
+      } else {
+        setAtsAnalysis(null);
+      }
+    } catch (err) {
+      console.warn("ATS latest fetch:", err);
+    } finally {
+      setAtsLoading(false);
+    }
+  }, []);
+
+  const fetchAtsHistory = useCallback(async () => {
+    try {
+      const res = await API.get("/resume/ats/history");
+      if (res.data?.data) {
+        setAtsHistory(res.data.data);
+      }
+    } catch (err) {
+      console.warn("ATS history fetch:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchResume();
-  }, [fetchResume]);
+    fetchLatestAts();
+    fetchAtsHistory();
+  }, [fetchResume, fetchLatestAts, fetchAtsHistory]);
 
   const navigateTo = (view, extraParams = {}) => {
     setSearchParams(prev => {
@@ -84,6 +122,7 @@ export function useResumeData() {
     try {
       setUploading(true);
       const formData = new FormData();
+      formData.append("file", file);
       formData.append("resume", file);
 
       const res = await API.post("/resume/upload", formData, {
@@ -93,15 +132,62 @@ export function useResumeData() {
       const payload = res.data?.data;
       setResumeData(payload?.resumeData || null);
       setUploadedAt(payload?.uploadedAt ? new Date(payload.uploadedAt) : new Date());
-      showToast("success", "Resume uploaded and analyzed successfully");
+      showToast("success", "Resume uploaded successfully");
       
-      // Navigate to analysis view automatically upon successful upload
-      navigateTo("analysis");
+      navigateTo("ats");
     } catch (error) {
       console.error("Resume Upload Error:", error);
       showToast("error", error?.response?.data?.message || "Resume upload failed");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const runAtsAnalysis = async (file, targetRole) => {
+    if (!file && !resumeData) {
+      showToast("error", "Please select or upload a resume to analyze.");
+      return;
+    }
+
+    try {
+      setAtsAnalyzing(true);
+      setAtsError(null);
+      setAtsStep(1); // Uploading & extracting
+
+      const formData = new FormData();
+      if (file) {
+        formData.append("file", file);
+        formData.append("resume", file);
+      }
+      if (targetRole) {
+        formData.append("targetRole", targetRole);
+      }
+
+      // Step progression animation
+      const stepTimer1 = setTimeout(() => setAtsStep(2), 700);
+      const stepTimer2 = setTimeout(() => setAtsStep(3), 1600);
+
+      const res = await API.post("/resume/ats/analyze", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      setAtsStep(4);
+
+      const analysisDoc = res.data?.data;
+      setAtsAnalysis(analysisDoc);
+      fetchAtsHistory();
+      fetchResume();
+      showToast("success", "ATS compatibility analysis completed!");
+    } catch (err) {
+      console.error("ATS Analysis error:", err);
+      const msg = err?.response?.data?.detail?.message || err?.response?.data?.message || "Resume analysis is temporarily unavailable. Please try again.";
+      setAtsError(msg);
+      showToast("error", msg);
+    } finally {
+      setAtsAnalyzing(false);
+      setAtsStep(0);
     }
   };
 
@@ -116,5 +202,15 @@ export function useResumeData() {
     navigateTo,
     uploadResume,
     toast,
+    // ATS specific
+    atsAnalysis,
+    atsHistory,
+    atsLoading,
+    atsAnalyzing,
+    atsStep,
+    atsError,
+    runAtsAnalysis,
+    fetchLatestAts,
+    fetchAtsHistory
   };
 }

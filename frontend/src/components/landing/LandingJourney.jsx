@@ -1,64 +1,91 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { 
-  BookOpen, Calculator, Sparkles, Code2, Bot, 
-  TrendingUp, ArrowRight, CheckCircle2, ChevronRight 
+  ClipboardCheck, Calendar, BookOpen, FolderGit2, Bot, 
+  TrendingUp, ArrowRight, CheckCircle2, ChevronRight, Sparkles, Target, Clock, ShieldAlert, Cpu
 } from "lucide-react";
 
-const steps = [
+const journeySteps = [
   {
-    number: "01",
-    phase: "DISCOVER",
-    title: "CS Foundations & Exam Syllabus",
-    subtitle: "Core Curriculum",
+    step: "01",
+    title: "Assess Your Skills",
+    subtitle: "Baseline Assessment",
+    icon: ClipboardCheck,
+    desc: "Take an optional baseline skill check or select your target engineering role. The system identifies your starting proficiency without fabricating baseline scores.",
+    color: "from-cyan-500 to-blue-500"
+  },
+  {
+    step: "02",
+    title: "Get a Personalized Plan",
+    subtitle: "Adaptive Roadmap",
+    icon: Calendar,
+    desc: "Receive an automatically calculated preparation roadmap configured to your graduation timeline, daily study target, and target company tier.",
+    color: "from-blue-500 to-indigo-500"
+  },
+  {
+    step: "03",
+    title: "Learn and Practice",
+    subtitle: "Interactive Lessons & Coding",
     icon: BookOpen,
-    desc: "Target your exact exam pattern (TCS NQT, SSC CGL) or SWE tracks. Study structured lessons covering OS, DBMS, Networks, and System Design with real-world analogies.",
-    capability: "Structured Lesson Sequences · Dry Run Visualizations"
+    desc: "Study conceptual lessons with real-world analogies and visualizers. Solve algorithmic problems in the sandbox with hidden test-case validation.",
+    color: "from-indigo-500 to-purple-500"
   },
   {
-    number: "02",
-    phase: "DIAGNOSE",
-    title: "Diagnostic Ingestion & Weakness Radar",
-    subtitle: "Error Taxonomy",
-    icon: Sparkles,
-    desc: "Every wrong attempt is diagnosed for its root cause (Calculation error, conceptual misunderstanding, or edge-case omission) and logged into your personal Mistake Notebook.",
-    capability: "Mistake Notebook · Root Cause Analysis"
+    step: "04",
+    title: "Build Projects & Improve Resume",
+    subtitle: "Portfolio & ATS Scan",
+    icon: FolderGit2,
+    desc: "Track portfolio milestones with tech stack checklists. Scan your resume through the ATS analyzer for missing keywords and quantifiable improvements.",
+    color: "from-purple-500 to-pink-500"
   },
   {
-    number: "03",
-    phase: "PRACTICE",
-    title: "Adaptive Aptitude & Quantitative Logic",
-    subtitle: "Adaptive Practice",
-    icon: Calculator,
-    desc: "Solve verified quantitative and logical reasoning questions with step-by-step formula breakdowns. Difficulty continuously scales based on your accuracy.",
-    capability: "Campus & SSC Pattern Verification · Instant Formula Cards"
-  },
-  {
-    number: "04",
-    phase: "SIMULATE",
-    title: "Algorithmic Arena & Sandbox Execution",
-    subtitle: "Judge0 Compiler",
-    icon: Code2,
-    desc: "Write and execute clean code in Python, C++, Java, and JavaScript against hidden test cases. Benchmark time and space complexity with progressive AI hints.",
-    capability: "Judge0 Sandbox · 15+ DSA Algorithmic Patterns"
-  },
-  {
-    number: "05",
-    phase: "CALIBRATE",
-    title: "AI Technical Mock Interview Studio",
-    subtitle: "Real-time AI Evaluator",
+    step: "05",
+    title: "Practice Interviews",
+    subtitle: "AI Mock Interviews",
     icon: Bot,
-    desc: "Experience real-time interactive technical interviews with dynamic follow-ups. Receive multi-dimensional rubric scoring on communication clarity, technical depth, and structure.",
-    capability: "Multi-Axis Rubric · Voice/Text Simulation"
+    desc: "Engage in technical and behavioral mock interview sessions. Receive structured multi-point evaluations with strengths, weaknesses, and revision topics.",
+    color: "from-pink-500 to-rose-500"
   },
   {
-    number: "06",
-    phase: "READY",
-    title: "Continuous Placement Readiness Score",
-    subtitle: "Holistic Benchmark",
+    step: "06",
+    title: "Track Your Readiness",
+    subtitle: "Placement Readiness Index",
     icon: TrendingUp,
-    desc: "Track your real-time 0–100% readiness score measured across aptitude speed, algorithmic accuracy, interview performance, and ATS resume compatibility.",
-    capability: "Progress Synthesis · Placement Readiness"
+    desc: "Monitor your placement readiness computed strictly from verified code submissions, quiz attempts, completed project tasks, and interview scores.",
+    color: "from-emerald-500 to-teal-500"
+  }
+];
+
+const personalizationDimensions = [
+  {
+    title: "Target Role Alignment",
+    desc: "Select SDE, Frontend, Backend, Full Stack, DevOps, or ML. Roadmaps adjust core topics and algorithmic patterns to match real industry expectations.",
+    icon: Target,
+    tag: "Role-Specific"
+  },
+  {
+    title: "Current Skill Level",
+    desc: "Whether you're starting from fundamental recursion or brushing up on dynamic programming, topic pacing calibrates to your verified baseline.",
+    icon: Cpu,
+    tag: "Adaptive Difficulty"
+  },
+  {
+    title: "Daily Study Target",
+    desc: "Set 1, 2, or 3+ hours daily. The study planner schedules manageable daily tasks with milestone reminders so you never burn out.",
+    icon: Clock,
+    tag: "Pacing Engine"
+  },
+  {
+    title: "Real Performance Tracking",
+    desc: "No fake completion scores. Coding accuracy, test execution times, and interview rubrics dynamically recalculate your readiness.",
+    icon: CheckCircle2,
+    tag: "Zero-Fake Metric"
+  },
+  {
+    title: "Weak Area Remediation",
+    desc: "Every failed test case and weak interview answer is automatically routed to your Mistake Book with step-by-step revision flashcards.",
+    icon: ShieldAlert,
+    tag: "Targeted Revision"
   }
 ];
 
@@ -66,143 +93,100 @@ export default function LandingJourney() {
   const [activeStep, setActiveStep] = useState(0);
 
   return (
-    <section id="placement-journey" className="py-24 bg-surface-subtle/40 border-t border-border/70 relative overflow-hidden">
-      
-      {/* Visual Ambient Continuity Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[400px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
+    <section id="how-it-works" className="py-24 bg-[#070A13] border-t border-border/60 relative overflow-hidden">
+      {/* Background glow effects */}
+      <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="absolute bottom-10 left-0 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Editorial Header */}
-        <div className="max-w-3xl mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-border text-xs font-mono text-cyan-400 mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-            <span>Placement Progression Path</span>
+        {/* Section 4: How It Works */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111728] border border-cyan-500/30 text-xs font-mono text-cyan-400 mb-4">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>How It Works</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-text-primary mb-3 font-display">
-            From Fundamental Learning to Placement-Ready.
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
+            The Complete Placement Journey
           </h2>
-          <p className="text-text-secondary text-base sm:text-lg">
-            No disconnected tools or unorganized PDFs. Every practice problem, coding submission, 
-            and mock interview feeds into one unified learning journey.
+          <p className="text-slate-400 text-sm sm:text-base mt-4 leading-relaxed">
+            From your first diagnostic assessment to final company offer letter, follow a disciplined, data-driven preparation methodology.
           </p>
         </div>
 
-        {/* ── Progressive Beam Navigation Tracks ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-8">
-          {steps.map((step, idx) => {
-            const isActive = activeStep === idx;
-            const Icon = step.icon;
+        {/* 6-step Journey Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {journeySteps.map((item, idx) => {
+            const Icon = item.icon;
             return (
-              <button
-                key={step.number}
-                type="button"
-                onClick={() => setActiveStep(idx)}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-surface border-primary-500/80 shadow-md shadow-primary-500/10"
-                    : "bg-surface/50 border-border/70 hover:bg-surface hover:border-border"
-                }`}
+              <div
+                key={item.step}
+                className="group relative p-6 rounded-2xl bg-[#0E1322]/70 hover:bg-[#11182B] border border-border/70 hover:border-cyan-500/40 transition-all duration-300 shadow-md hover:shadow-xl backdrop-blur-sm flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-mono font-bold text-text-muted">{step.number}</span>
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-primary-400 font-bold">{step.phase}</span>
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xl font-extrabold text-slate-500 group-hover:text-cyan-400 transition-colors">
+                      {item.step}
+                    </span>
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${item.color} flex items-center justify-center text-white shadow-sm`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-mono text-cyan-400 font-semibold uppercase tracking-wider block mb-1">
+                    {item.subtitle}
+                  </span>
+                  <h3 className="text-lg font-bold text-white tracking-tight">
+                    {item.title}
+                  </h3>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-2 leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-primary-400" : "text-text-muted"}`} />
-                  <span className="text-xs font-semibold text-text-primary truncate block">{step.subtitle}</span>
-                </div>
-              </button>
+              </div>
             );
           })}
         </div>
 
-        {/* ── Active Stage Spotlight Feature Area ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeStep}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-            className="p-6 sm:p-8 rounded-2xl border border-border bg-surface shadow-xl relative overflow-hidden"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              
-              {/* Left Column: Descriptive Content */}
-              <div className="lg:col-span-7 space-y-4 text-left">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-primary-500/15 text-primary-300 border border-primary-500/30">
-                    STAGE {steps[activeStep].number}
-                  </span>
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-text-primary font-display">
-                      {steps[activeStep].title}
-                    </h3>
-                  </div>
-                </div>
-
-                <p className="text-text-secondary text-sm sm:text-base leading-relaxed">
-                  {steps[activeStep].desc}
-                </p>
-
-                <div className="pt-2 border-t border-border/70 flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-mono text-text-muted">Highlights:</span>
-                  <span className="text-xs font-medium text-text-primary px-2.5 py-1 rounded-md bg-surface-2 border border-border/80">
-                    {steps[activeStep].capability}
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Column: Stage Progress Visual */}
-              <div className="lg:col-span-5 p-5 rounded-xl border border-border/80 bg-surface-2/60 space-y-3 text-left">
-                <div className="flex items-center justify-between text-xs font-mono text-text-muted pb-2 border-b border-border/60">
-                  <span>STAGE STATUS</span>
-                  <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 text-[10px] font-bold">
-                    [PRODUCT DEMO]
-                  </span>
-                </div>
-
-                <div className="space-y-2.5">
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="text-xs">
-                      <strong className="text-text-primary block font-medium">Automatic Memory Ingestion</strong>
-                      <span className="text-text-secondary text-[11px]">Results immediately update your placement readiness profile.</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-primary-500/20 text-primary-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="text-xs">
-                      <strong className="text-text-primary block font-medium">Adaptive Practice</strong>
-                      <span className="text-text-secondary text-[11px]">Adapts the difficulty curve to push you toward candidate mastery.</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="pt-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setActiveStep((prev) => (prev + 1) % steps.length)}
-                    className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>Next Phase ({steps[(activeStep + 1) % steps.length].phase})</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
+        {/* Section 5: Personalized Learning Section */}
+        <div id="journey" className="mt-28 pt-16 border-t border-border/50">
+          <div className="max-w-3xl mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111728] border border-indigo-500/30 text-xs font-mono text-indigo-400 mb-3">
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Adaptive Intelligence</span>
             </div>
-          </motion.div>
-        </AnimatePresence>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+              How InterviewPilot AI Adapts to You
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base mt-2 leading-relaxed">
+              No generic static playlists. The placement operating system adjusts continuously across five real-time dimensions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {personalizationDimensions.map((dim, i) => {
+              const Icon = dim.icon;
+              return (
+                <div
+                  key={i}
+                  className="p-6 rounded-2xl bg-[#0E1322]/80 border border-border/70 hover:border-indigo-500/40 transition-all p-5 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-surface text-slate-300 border border-border/60">
+                      {dim.tag}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-white">{dim.title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{dim.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
       </div>
-
     </section>
   );
 }

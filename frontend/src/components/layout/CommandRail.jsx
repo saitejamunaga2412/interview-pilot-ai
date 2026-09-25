@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Map, BookOpen, Calculator, Code2,
-  Bot, Compass, FileText, BarChart3, UserCheck, BookmarkCheck, Award
+  Bot, Compass, FileText, BarChart3, UserCheck, Settings, FolderGit2
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 
@@ -17,26 +17,26 @@ export const navGroups = [
   {
     category: "PREPARE",
     items: [
-      { icon: BookOpen, label: "Learning", path: "/learning" },
+      { icon: BookOpen, label: "Learn", path: "/learning" },
       { icon: Calculator, label: "Aptitude", path: "/aptitude" },
-      { icon: Code2, label: "Coding Arena", path: "/arena" },
-      { icon: Bot, label: "AI Interview", path: "/interview" },
-      { icon: BookmarkCheck, label: "Mistake Book", path: "/mistakes" }
+      { icon: Code2, label: "Coding", path: "/arena" },
+      { icon: Bot, label: "AI Interview", path: "/interview" }
     ]
   },
   {
     category: "CAREER",
     items: [
-      { icon: FileText, label: "Resume ATS", path: "/resume" },
+      { icon: FileText, label: "Resume", path: "/resume" },
+      { icon: FolderGit2, label: "Projects", path: "/projects" },
       { icon: Compass, label: "Career Advisor", path: "/advisor" },
-      { icon: Award, label: "Placement Simulation", path: "/simulation" },
       { icon: BarChart3, label: "Analytics", path: "/history" }
     ]
   },
   {
     category: "PROFILE",
     items: [
-      { icon: UserCheck, label: "Profile", path: "/profile" }
+      { icon: UserCheck, label: "Profile", path: "/profile" },
+      { icon: Settings, label: "Settings", path: "/settings" }
     ]
   }
 ];

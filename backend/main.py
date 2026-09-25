@@ -29,6 +29,7 @@ from routers.career import advisor_router, intel_router
 from routers.notifications import router as notifications_router
 from routers.mistakes import router as mistakes_router
 from routers.assessments import assessment_router, simulation_router
+from routers.projects import router as projects_router
 from routers.misc import misc_router
 
 @asynccontextmanager
@@ -115,6 +116,7 @@ app.include_router(mistakes_router)
 app.include_router(assessment_router, prefix="/api/assessment")
 app.include_router(assessment_router, prefix="/api/assessments", include_in_schema=False)
 app.include_router(simulation_router)
+app.include_router(projects_router)
 app.include_router(misc_router)
 
 @app.get("/")

@@ -172,20 +172,20 @@
   }
 
   .dark {
-    /* ---- Dark Mode: Obsidian & Electric Violet ---- */
-    --bg-base: #080a12;
-    --bg-subtle: #0d1020;
-    --surface: #0d1020;
-    --surface-2: #11162a;
-    --surface-hover: #181f38;
+    /* ---- Dark Mode: Futuristic Anime/Sci-Fi Professional ---- */
+    --bg-base: #070914;
+    --bg-subtle: #0b1020;
+    --surface: #0f1629;
+    --surface-2: #141b32;
+    --surface-hover: #1c2646;
     --border: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(124, 92, 252, 0.25);
-    --ring: rgba(124, 92, 252, 0.4);
+    --border-strong: rgba(124, 92, 252, 0.3);
+    --ring: rgba(93, 231, 255, 0.4);
 
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --text-inverse: #080a12;
+    --text-inverse: #070914;
 
     /* Gradient tokens dark */
     --gradient-primary: linear-gradient(135deg, #7c5cfc 0%, #4ea8ff 100%);

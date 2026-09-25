@@ -1,47 +1,47 @@
 import React, { useEffect } from "react";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import LandingHero from "../components/landing/LandingHero";
-import LandingJourney from "../components/landing/LandingJourney";
-import LandingCareerVisual from "../components/landing/LandingCareerVisual";
-import LandingAIPipeline from "../components/landing/LandingAIPipeline";
 import LandingPillars from "../components/landing/LandingPillars";
+import LandingJourney from "../components/landing/LandingJourney";
+import LandingAIPipeline from "../components/landing/LandingAIPipeline";
+import LandingCareerVisual from "../components/landing/LandingCareerVisual";
 import LandingInteractiveStudio from "../components/landing/LandingInteractiveStudio";
 import LandingCTA from "../components/landing/LandingCTA";
 import LandingFooter from "../components/landing/LandingFooter";
 
 export default function Landing() {
   useEffect(() => {
-    document.title = "InterviewPilot AI";
+    document.title = "InterviewPilot AI — Placement Operating System";
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary font-sans antialiased selection:bg-primary-500/25 selection:text-text-primary overflow-x-hidden">
-      {/* Navbar */}
+    <div className="min-h-screen bg-[#070A13] text-text-primary font-sans antialiased selection:bg-cyan-500/25 selection:text-white overflow-x-hidden">
+      {/* 1. Navigation */}
       <LandingNavbar />
 
-      {/* SECTION 1: Hero */}
+      {/* 2. Hero Section */}
       <LandingHero />
 
-      {/* SECTION 2: Everything You Need (Core Modules) */}
+      {/* 3. Core Features (5 Core Pillars) */}
       <LandingPillars />
 
-      {/* SECTION 3: Your Preparation, Visualized */}
-      <LandingCareerVisual />
-
-      {/* SECTION 4: My Journey */}
+      {/* 4 & 5. How It Works & Personalized Learning Section */}
       <LandingJourney />
 
-      {/* SECTION 5: AI Assistant */}
+      {/* 6. AI Interview Section */}
       <LandingAIPipeline />
 
-      {/* SECTION 6: Practice Like the Real Thing */}
+      {/* 7. Analytics & Real Progress Tracking */}
+      <LandingCareerVisual />
+
+      {/* Interactive Studio Preview */}
       <LandingInteractiveStudio />
 
-      {/* SECTION 7: Final CTA */}
+      {/* 8. Final CTA */}
       <LandingCTA />
 
-      {/* Footer */}
+      {/* 9. Footer */}
       <LandingFooter />
     </div>
   );

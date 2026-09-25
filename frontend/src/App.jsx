@@ -40,6 +40,7 @@ const Aptitude = lazy(() => import("./pages/Aptitude"));
 const TopicLearningPage = lazy(() => import("./pages/aptitude/TopicLearningPage"));
 const MistakeBook = lazy(() => import("./pages/mistakes/MistakeBook"));
 const PlacementSimulation = lazy(() => import("./pages/simulation/PlacementSimulation"));
+const ProjectsPage = lazy(() => import("./pages/projects/ProjectsPage"));
 
 // Assessment Platform
 const AssessmentDashboard = lazy(() => import("./pages/assessment/AssessmentDashboard"));
@@ -78,6 +79,7 @@ function App() {
                 <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
                 <Route path="/history/:sessionId" element={<ProtectedRoute><InterviewDetails /></ProtectedRoute>} />
                 <Route path="/resume" element={<ProtectedRoute><Resume /></ProtectedRoute>} />
+                <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
                 <Route path="/mistakes" element={<ProtectedRoute><MistakeBook /></ProtectedRoute>} />
                 <Route path="/simulation" element={<ProtectedRoute><PlacementSimulation /></ProtectedRoute>} />
                 <Route path="/career-assessment" element={<ProtectedRoute><CareerAssessment /></ProtectedRoute>} />
