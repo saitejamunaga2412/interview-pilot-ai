@@ -56,24 +56,33 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Rate Limiter Middleware (applied first so CORS wraps on the outside)
+from core.rate_limiter import RateLimiterMiddleware
+app.add_middleware(RateLimiterMiddleware)
+
 # CORS Configuration
 configured_origins = [o.strip().rstrip("/") for o in settings.FRONTEND_URL.split(",") if o.strip()]
 origins = list(set(configured_origins + [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:3000"
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
 ]))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-from core.rate_limiter import RateLimiterMiddleware
-app.add_middleware(RateLimiterMiddleware)
 
 # Global Exception Handler
 @app.exception_handler(Exception)

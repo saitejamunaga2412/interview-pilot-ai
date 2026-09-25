@@ -20,9 +20,13 @@ class EmailService:
             return {"success": True, "mode": "dry_run", "to": to_email}
 
         try:
+            sender = settings.SMTP_FROM
+            if settings.SMTP_USER and ("gmail" in settings.SMTP_HOST.lower() or "@" in settings.SMTP_USER):
+                sender = f"InterviewPilot AI <{settings.SMTP_USER}>"
+
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = settings.SMTP_FROM
+            msg["From"] = sender
             msg["To"] = to_email
 
             if text_content:
@@ -32,7 +36,7 @@ class EmailService:
             with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10.0) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASS)
-                server.sendmail(settings.SMTP_FROM, to_email, msg.as_string())
+                server.sendmail(settings.SMTP_USER if settings.SMTP_USER else sender, to_email, msg.as_string())
 
             logger.info(f"[EmailService] Email sent successfully to {to_email}")
             return {"success": True}

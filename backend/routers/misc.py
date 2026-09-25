@@ -39,6 +39,21 @@ async def get_health():
         }
     }
 
+# 1b. Test Email Dispatch
+@misc_router.post("/api/misc/send-test-email")
+async def send_test_email(current_user: Dict[str, Any] = Depends(get_current_user)):
+    user_email = current_user.get("email")
+    if not user_email:
+        return {"success": False, "message": "Authenticated user does not have an email address."}
+
+    result = email_service.send_email(
+        to_email=user_email,
+        subject="[InterviewPilot AI] SMTP Verification Test",
+        html_content=f"<h3>InterviewPilot AI Verification</h3><p>Hello {current_user.get('name', 'Candidate')},</p><p>This is a verified test email sent from your InterviewPilot AI installation.</p><p>Timestamp: {datetime.utcnow().isoformat()}</p>",
+        text_content=f"Hello {current_user.get('name', 'Candidate')}, This is a verified test email sent from your InterviewPilot AI installation."
+    )
+    return {"success": result.get("success", False), "result": result}
+
 # 2. Exam Patterns
 @misc_router.get("/api/exam-patterns")
 @misc_router.get("/api/exam-patterns/patterns")
