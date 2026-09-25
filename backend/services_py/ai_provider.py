@@ -12,10 +12,21 @@ class GeminiProvider:
         self.timeout = settings.GEMINI_TIMEOUT
 
     def get_model_candidates(self) -> List[str]:
-        configured = settings.GEMINI_MODEL or "gemini-1.5-flash"
+        from pathlib import Path
+        from dotenv import dotenv_values
+        env_path = Path(__file__).resolve().parent.parent / ".env"
+        env_vals = dotenv_values(env_path) if env_path.exists() else {}
+        configured = env_vals.get("GEMINI_MODEL") or settings.GEMINI_MODEL or "gemini-flash-lite-latest"
         # Strictly Gemini models only; Gemma, Groq, Ollama are completely excluded
-        candidate_list = [configured] if configured else ["gemini-1.5-flash"]
-        standard_models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-2.5-flash", "gemini-flash-lite-latest"]
+        candidate_list = [configured] if configured else ["gemini-flash-lite-latest"]
+        standard_models = [
+            "gemini-flash-lite-latest",
+            "gemini-3.8-flash",
+            "gemini-flash-latest",
+            "gemini-3.1-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-1.5-flash"
+        ]
         for m in standard_models:
             if m not in candidate_list:
                 candidate_list.append(m)
@@ -28,7 +39,11 @@ class GeminiProvider:
         # Safe cap for extremely large prompts to prevent payload overflow
         safe_prompt = prompt.strip()[:30000]
 
-        api_key = settings.GEMINI_API_KEY
+        from pathlib import Path
+        from dotenv import dotenv_values
+        env_path = Path(__file__).resolve().parent.parent / ".env"
+        env_vals = dotenv_values(env_path) if env_path.exists() else {}
+        api_key = (env_vals.get("GEMINI_API_KEY") or settings.GEMINI_API_KEY or "").strip().strip("'\"")
         if not api_key or len(api_key.strip()) < 10:
             raise RuntimeError("Gemini API key is not configured.")
 
