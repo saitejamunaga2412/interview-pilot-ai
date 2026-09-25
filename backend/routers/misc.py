@@ -46,7 +46,11 @@ async def send_test_email(current_user: Dict[str, Any] = Depends(get_current_use
     if not user_email:
         return {"success": False, "message": "Authenticated user does not have an email address."}
 
-    result = email_service.send_email(
+    import importlib
+    import services_py.email_service
+    importlib.reload(services_py.email_service)
+    
+    result = services_py.email_service.email_service.send_email(
         to_email=user_email,
         subject="[InterviewPilot AI] SMTP Verification Test",
         html_content=f"<h3>InterviewPilot AI Verification</h3><p>Hello {current_user.get('name', 'Candidate')},</p><p>This is a verified test email sent from your InterviewPilot AI installation.</p><p>Timestamp: {datetime.utcnow().isoformat()}</p>",

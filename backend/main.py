@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
 
+# InterviewPilot AI Production Placement OS
+
 # Add backend directory to sys.path so modules import seamlessly
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
