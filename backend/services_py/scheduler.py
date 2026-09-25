@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from core.database import get_database
@@ -44,16 +45,19 @@ async def daily_reminder_job():
             })
             count += 1
 
-            # Dispatch email if user explicitly opted in to email notifications
+            # Dispatch email if user explicitly opted in to email notifications (non-blocking)
             if user.get("settings", {}).get("notificationPreferences", {}).get("email") and user.get("email"):
                 try:
                     from services_py.email_service import email_service
                     first_name = user_name.split()[0]
-                    email_service.send_email(
-                        to_email=user["email"],
-                        subject="🎯 Your Daily Placement Prep is Ready — InterviewPilot AI",
-                        html_content=f"<h3>Keep Your Streak Alive, {first_name}!</h3><p>Your personalized daily placement tasks are ready on your dashboard.</p><p><a href='http://localhost:5174/dashboard'>Open Today's Mission &rarr;</a></p>",
-                        text_content=f"Hey {first_name}! Your personalized daily placement tasks are ready on your dashboard: http://localhost:5174/dashboard"
+                    asyncio.create_task(
+                        asyncio.to_thread(
+                            email_service.send_email,
+                            to_email=user["email"],
+                            subject="🎯 Your Daily Placement Prep is Ready — InterviewPilot AI",
+                            html_content=f"<h3>Keep Your Streak Alive, {first_name}!</h3><p>Your personalized daily placement tasks are ready on your dashboard.</p><p><a href='http://localhost:5174/dashboard'>Open Today's Mission &rarr;</a></p>",
+                            text_content=f"Hey {first_name}! Your personalized daily placement tasks are ready on your dashboard: http://localhost:5174/dashboard"
+                        )
                     )
                 except Exception as mail_err:
                     logger.warning(f"[Scheduler] Email dispatch failed for user {user_id}: {mail_err}")
