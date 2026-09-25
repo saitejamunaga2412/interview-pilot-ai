@@ -74,6 +74,7 @@ async def get_session(session_id: str, current_user: Dict[str, Any] = Depends(ge
         "data": details
     }
 
+@result_router.delete("/session/{session_id}")
 @result_router.delete("/delete/{session_id}")
 async def delete_session(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
     user_id = current_user["id"]
@@ -85,6 +86,7 @@ async def delete_session(session_id: str, current_user: Dict[str, Any] = Depends
     }
 
 @result_router.delete("/clear")
+@result_router.delete("/clear-history")
 async def clear_history(current_user: Dict[str, Any] = Depends(get_current_user)):
     from core.database import get_database
     db = get_database()
