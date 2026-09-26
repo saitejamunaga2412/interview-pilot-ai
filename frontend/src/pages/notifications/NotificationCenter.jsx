@@ -10,7 +10,8 @@ import {
   fetchNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-  deleteNotification
+  deleteNotification,
+  triggerTestNotification
 } from "../../services/notificationApi";
 import { cn } from "../../utils/cn";
 
@@ -70,9 +71,13 @@ export default function NotificationCenter() {
     if (e) e.stopPropagation();
     try {
       await markNotificationAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
-      );
+      if (activeTab === "UNREAD") {
+        setNotifications((prev) => prev.filter((n) => (n._id || n.id) !== id));
+      } else {
+        setNotifications((prev) =>
+          prev.map((n) => ((n._id || n.id) === id ? { ...n, read: true } : n))
+        );
+      }
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       // silent fallback
@@ -82,7 +87,11 @@ export default function NotificationCenter() {
   const handleMarkAllRead = async () => {
     try {
       await markAllNotificationsAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      if (activeTab === "UNREAD") {
+        setNotifications([]);
+      } else {
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      }
       setUnreadCount(0);
     } catch (err) {
       // silent fallback
@@ -93,7 +102,7 @@ export default function NotificationCenter() {
     if (e) e.stopPropagation();
     try {
       await deleteNotification(id);
-      setNotifications((prev) => prev.filter((n) => n._id !== id));
+      setNotifications((prev) => prev.filter((n) => (n._id || n.id) !== id));
       loadNotifications(activeTab, page);
     } catch (err) {
       // silent fallback
@@ -101,11 +110,28 @@ export default function NotificationCenter() {
   };
 
   const handleActionClick = (notif) => {
-    if (!notif.read) {
-      handleMarkAsRead(notif._id);
+    const notifId = notif._id || notif.id;
+    if (!notif.read && notifId) {
+      handleMarkAsRead(notifId);
     }
     if (notif.actionRoute) {
       navigate(notif.actionRoute);
+    }
+  };
+
+  const handleTriggerSample = async () => {
+    try {
+      const typeKey = activeTab === "ALL" || activeTab === "UNREAD" ? "recommendation" : activeTab.toLowerCase();
+      await triggerTestNotification({
+        type: typeKey,
+        title: "🎯 Focus Topic: Binary Search & Tree Traversal",
+        message: "Targeted practice for top technical roles. Master high-frequency algorithm patterns!",
+        actionLabel: "Start Practice",
+        actionRoute: "/coding"
+      });
+      loadNotifications(activeTab, 1);
+    } catch (err) {
+      // silent fallback
     }
   };
 
@@ -227,7 +253,7 @@ export default function NotificationCenter() {
           <p className="text-xs font-mono text-text-muted">Loading notifications...</p>
         </div>
       ) : notifications.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl border border-border bg-surface p-8 space-y-3 shadow-sm">
+        <div className="py-16 text-center rounded-2xl border border-border bg-surface p-8 space-y-4 shadow-sm">
           <div className="w-12 h-12 rounded-2xl bg-surface-2 text-text-muted mx-auto flex items-center justify-center border border-border">
             <CheckCircle2 className="w-6 h-6 text-emerald-400" />
           </div>
@@ -235,13 +261,23 @@ export default function NotificationCenter() {
           <p className="text-xs text-text-secondary max-w-sm mx-auto">
             No notifications found in this category. We will alert you when new preparation goals or performance updates are available.
           </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleTriggerSample}
+              className="px-4 py-2 rounded-xl bg-primary-600/15 hover:bg-primary-600/25 border border-primary-500/30 text-primary-300 font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-primary-400" />
+              <span>Trigger Practice Alert</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
             {notifications.map((notif) => (
               <motion.div
-                key={notif._id}
+                key={notif._id || notif.id}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -292,7 +328,7 @@ export default function NotificationCenter() {
                     {!notif.read && (
                       <button
                         type="button"
-                        onClick={(e) => handleMarkAsRead(notif._id, e)}
+                        onClick={(e) => handleMarkAsRead(notif._id || notif.id, e)}
                         className="p-1.5 rounded-lg text-text-muted hover:text-primary-400 hover:bg-surface-2 transition-colors cursor-pointer"
                         title="Mark as read"
                       >
@@ -301,7 +337,7 @@ export default function NotificationCenter() {
                     )}
                     <button
                       type="button"
-                      onClick={(e) => handleDelete(notif._id, e)}
+                      onClick={(e) => handleDelete(notif._id || notif.id, e)}
                       className="p-1.5 rounded-lg text-text-muted hover:text-rose-400 hover:bg-surface-2 transition-colors cursor-pointer"
                       title="Delete notification"
                     >

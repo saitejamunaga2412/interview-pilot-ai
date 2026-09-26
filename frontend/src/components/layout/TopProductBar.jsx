@@ -99,10 +99,11 @@ export default function TopProductBar({ onMobileMenuToggle, isMobileMenuOpen }) 
   };
 
   const handleNotificationClick = async (notif) => {
-    if (!notif.read) {
-      markNotificationAsRead(notif._id).catch(() => {});
+    const notifId = notif._id || notif.id;
+    if (!notif.read && notifId) {
+      markNotificationAsRead(notifId).catch(() => {});
       setNotifications((prev) =>
-        prev.map((n) => (n._id === notif._id ? { ...n, read: true } : n))
+        prev.map((n) => ((n._id || n.id) === notifId ? { ...n, read: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     }
@@ -275,7 +276,7 @@ export default function TopProductBar({ onMobileMenuToggle, isMobileMenuOpen }) 
                   ) : (
                     notifications.map((notif) => (
                       <div
-                        key={notif._id}
+                        key={notif._id || notif.id}
                         onClick={() => handleNotificationClick(notif)}
                         className={cn(
                           "p-3 hover:bg-surface-hover transition-colors cursor-pointer text-left space-y-1 relative",

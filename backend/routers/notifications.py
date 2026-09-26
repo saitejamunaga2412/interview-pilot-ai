@@ -6,12 +6,60 @@ from services_py.notification_service import notification_service
 router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
 
 @router.get("")
-async def get_notifications(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_notifications(
+    page: int = 1,
+    limit: int = 30,
+    type: Optional[str] = None,
+    unreadOnly: Optional[bool] = False,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
     user_id = current_user["id"]
-    notes = await notification_service.get_notifications(user_id)
+    res = await notification_service.get_notifications(
+        user_id=user_id,
+        limit=limit,
+        page=page,
+        type_filter=type,
+        unread_only=bool(unreadOnly)
+    )
     return {
         "success": True,
-        "data": notes
+        "data": res["notifications"],
+        "notifications": res["notifications"],
+        "total": res["total"],
+        "unreadCount": res["unreadCount"],
+        "page": res["page"],
+        "limit": res["limit"],
+        "totalPages": res["totalPages"]
+    }
+
+@router.post("/trigger-test")
+@router.post("/trigger")
+async def trigger_test_notification(
+    payload: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    user_id = current_user["id"]
+    notif_type = payload.get("type", "recommendation")
+    title = payload.get("title") or "Placement Preparation Recommendation"
+    message = payload.get("message") or "Practice Dynamic Programming to boost your technical interview readiness."
+    action_label = payload.get("actionLabel") or "View Roadmap"
+    action_route = payload.get("actionRoute") or "/learning"
+    priority = payload.get("priority") or "normal"
+
+    notif_id = await notification_service.create_notification({
+        "userId": user_id,
+        "type": notif_type,
+        "title": title,
+        "message": message,
+        "priority": priority,
+        "actionLabel": action_label,
+        "actionRoute": action_route,
+        "source": payload.get("source", "system")
+    })
+    return {
+        "success": True,
+        "message": "Test notification created successfully",
+        "data": {"id": notif_id}
     }
 
 @router.get("/unread-count")

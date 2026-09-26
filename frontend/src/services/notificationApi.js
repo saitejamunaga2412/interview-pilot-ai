@@ -6,7 +6,7 @@ import api from "./api";
 export async function fetchNotifications(params = {}) {
   const token = localStorage.getItem("token");
   if (!token) {
-    return { notifications: [], total: 0, unreadCount: 0 };
+    return { notifications: [], total: 0, unreadCount: 0, totalPages: 1 };
   }
   const query = new URLSearchParams();
   if (params.page) query.append("page", params.page);
@@ -17,7 +17,39 @@ export async function fetchNotifications(params = {}) {
   const queryString = query.toString();
   const url = `/notifications${queryString ? `?${queryString}` : ""}`;
   const response = await api.get(url);
-  return response?.data?.data || { notifications: [], total: 0, unreadCount: 0 };
+  const resData = response?.data;
+
+  let rawList = [];
+  if (Array.isArray(resData?.notifications)) {
+    rawList = resData.notifications;
+  } else if (Array.isArray(resData?.data)) {
+    rawList = resData.data;
+  } else if (Array.isArray(resData?.data?.notifications)) {
+    rawList = resData.data.notifications;
+  }
+
+  const total = typeof resData?.total === "number"
+    ? resData.total
+    : (typeof resData?.data?.total === "number" ? resData.data.total : rawList.length);
+
+  const unreadCount = typeof resData?.unreadCount === "number"
+    ? resData.unreadCount
+    : (typeof resData?.data?.unreadCount === "number"
+        ? resData.data.unreadCount
+        : rawList.filter((n) => !n.read).length);
+
+  const totalPages = typeof resData?.totalPages === "number"
+    ? resData.totalPages
+    : (typeof resData?.data?.totalPages === "number"
+        ? resData.data.totalPages
+        : Math.max(1, Math.ceil(total / (params.limit || 25))));
+
+  return {
+    notifications: rawList,
+    total,
+    unreadCount,
+    totalPages
+  };
 }
 
 /**
@@ -29,7 +61,7 @@ export async function fetchUnreadCount() {
     return 0;
   }
   const response = await api.get("/notifications/unread-count");
-  return response?.data?.data?.count || 0;
+  return response?.data?.data?.count ?? response?.data?.count ?? 0;
 }
 
 /**
@@ -37,7 +69,7 @@ export async function fetchUnreadCount() {
  */
 export async function markNotificationAsRead(id) {
   const response = await api.patch(`/notifications/${id}/read`);
-  return response?.data?.data;
+  return response?.data;
 }
 
 /**
@@ -45,7 +77,7 @@ export async function markNotificationAsRead(id) {
  */
 export async function markAllNotificationsAsRead() {
   const response = await api.patch("/notifications/read-all");
-  return response?.data?.data;
+  return response?.data;
 }
 
 /**
@@ -53,7 +85,15 @@ export async function markAllNotificationsAsRead() {
  */
 export async function deleteNotification(id) {
   const response = await api.delete(`/notifications/${id}`);
-  return response?.data?.data;
+  return response?.data;
+}
+
+/**
+ * Trigger a genuine test notification for testing
+ */
+export async function triggerTestNotification(payload = {}) {
+  const response = await api.post("/notifications/trigger-test", payload);
+  return response?.data;
 }
 
 /**
@@ -63,3 +103,4 @@ export async function fetchReturnSummary() {
   const response = await api.get("/dashboard/return-summary");
   return response?.data?.data;
 }
+

@@ -7,10 +7,55 @@ logger = logging.getLogger("uvicorn.error")
 
 class NotificationService:
     @classmethod
-    async def get_notifications(cls, user_id: str, limit: int = 30) -> List[Dict[str, Any]]:
+    async def get_notifications(
+        cls,
+        user_id: str,
+        limit: int = 30,
+        page: int = 1,
+        type_filter: Optional[str] = None,
+        unread_only: bool = False
+    ) -> Dict[str, Any]:
+        import math
         db = get_database()
-        notes = await db["notifications"].find({"userId": user_id}).sort("createdAt", -1).limit(limit).to_list(limit)
-        return serialize_doc(notes)
+        query: Dict[str, Any] = {"userId": user_id}
+
+        if unread_only:
+            query["read"] = False
+
+        if type_filter and type_filter.strip().lower() not in ["all", ""]:
+            t_norm = type_filter.strip().lower()
+            category_map = {
+                "recommendation": ["recommendation", "career_recommendation", "learning_recommendation", "daily_reminder", "inactivity_reminder", "goal"],
+                "learning": ["learning", "learning_recommendation", "study", "dsa", "concept", "lesson", "topic", "revision"],
+                "coding": ["coding", "coding_streak", "challenge", "problem", "submission", "code"],
+                "interview": ["interview", "mock_interview", "behavioral", "technical", "hr"],
+                "progress": ["progress", "weekly_summary", "monthly_summary", "achievement", "streak", "milestone"],
+                "system": ["system", "welcome", "announcement", "security", "account", "settings", "resume"],
+            }
+            if t_norm in category_map:
+                matched_types = category_map[t_norm]
+                query["$or"] = [
+                    {"type": {"$in": matched_types}},
+                    {"type": {"$regex": f"^{t_norm}", "$options": "i"}}
+                ]
+            else:
+                query["type"] = {"$regex": f"^{t_norm}", "$options": "i"}
+
+        skip = max(0, (page - 1) * limit) if page >= 1 else 0
+        notes = await db["notifications"].find(query).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+        total = await db["notifications"].count_documents(query)
+        unread_count = await db["notifications"].count_documents({"userId": user_id, "read": False})
+        total_pages = max(1, math.ceil(total / limit)) if limit > 0 else 1
+
+        serialized_notes = serialize_doc(notes)
+        return {
+            "notifications": serialized_notes,
+            "total": total,
+            "unreadCount": unread_count,
+            "page": page,
+            "limit": limit,
+            "totalPages": total_pages
+        }
 
     @classmethod
     async def get_unread_count(cls, user_id: str) -> int:
@@ -22,12 +67,16 @@ class NotificationService:
     async def mark_read(cls, user_id: str, notification_id: str) -> bool:
         db = get_database()
         n_oid = to_object_id(notification_id)
-        if not n_oid:
-            return False
-        res = await db["notifications"].update_one(
-            {"_id": n_oid, "userId": user_id},
-            {"$set": {"read": True}}
-        )
+        if n_oid:
+            res = await db["notifications"].update_one(
+                {"_id": n_oid, "userId": user_id},
+                {"$set": {"read": True}}
+            )
+        else:
+            res = await db["notifications"].update_one(
+                {"$or": [{"_id": notification_id}, {"id": notification_id}], "userId": user_id},
+                {"$set": {"read": True}}
+            )
         return res.modified_count > 0
 
     @classmethod
@@ -43,9 +92,12 @@ class NotificationService:
     async def delete_notification(cls, user_id: str, notification_id: str) -> bool:
         db = get_database()
         n_oid = to_object_id(notification_id)
-        if not n_oid:
-            return False
-        res = await db["notifications"].delete_one({"_id": n_oid, "userId": user_id})
+        if n_oid:
+            res = await db["notifications"].delete_one({"_id": n_oid, "userId": user_id})
+        else:
+            res = await db["notifications"].delete_one(
+                {"$or": [{"_id": notification_id}, {"id": notification_id}], "userId": user_id}
+            )
         return res.deleted_count > 0
 
     @classmethod
