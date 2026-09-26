@@ -165,8 +165,17 @@ Return ONLY valid JSON matching:
         else:
             eval_result["attemptStatus"] = "Attempted"
 
+        raw_score = eval_result.get("score")
+        try:
+            score = int(raw_score) if raw_score is not None else 70
+        except (ValueError, TypeError):
+            score = 70
+
+        if len(answer.split()) >= 4 and score <= 0:
+            score = 45
+        eval_result["score"] = score
+
         db = get_database()
-        score = eval_result.get("score", 70)
 
         # Store individual result in results collection
         res_doc = {
