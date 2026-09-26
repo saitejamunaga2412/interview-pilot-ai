@@ -49,12 +49,45 @@ async def send_test_email(current_user: Dict[str, Any] = Depends(get_current_use
     import importlib
     import services_py.email_service
     importlib.reload(services_py.email_service)
-    
+    from services_py.notification_service import notification_service
+    test_key = f"email_test_{current_user.get('id')}_{int(datetime.utcnow().timestamp())}"
+
+    from services_py.email_templates import build_test_verification_email
+    frontend_base = settings.get_frontend_url()
+    settings_link = f"{frontend_base}/settings"
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    subject, html_content, text_content = build_test_verification_email(
+        user_name=current_user.get("name", "Candidate"),
+        recipient_email=user_email,
+        timestamp_str=now_str,
+        settings_link=settings_link
+    )
+
+    await notification_service.record_delivery_attempt(
+        dedupe_key=test_key,
+        user_id=str(current_user.get("id")),
+        recipient=user_email,
+        notification_type="test_email",
+        subject=subject
+    )
+
     result = services_py.email_service.email_service.send_email(
         to_email=user_email,
-        subject="[InterviewPilot AI] SMTP Verification Test",
-        html_content=f"<h3>InterviewPilot AI Verification</h3><p>Hello {current_user.get('name', 'Candidate')},</p><p>This is a verified test email sent from your InterviewPilot AI installation.</p><p>Timestamp: {datetime.utcnow().isoformat()}</p>",
-        text_content=f"Hello {current_user.get('name', 'Candidate')}, This is a verified test email sent from your InterviewPilot AI installation."
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content,
+        unsubscribe_url=settings_link,
+        is_security=False,
+        recipient_name=current_user.get("name")
+    )
+
+    await notification_service.record_delivery_result(
+        dedupe_key=test_key,
+        success=bool(result.get("success")),
+        error=result.get("error"),
+        mode=result.get("mode"),
+        delivery_status=result.get("status")
     )
     return {"success": result.get("success", False), "result": result}
 

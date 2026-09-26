@@ -19,17 +19,33 @@ export default function Login() {
   const handleLogin = async (e) => {
     e?.preventDefault();
     setError("");
-    if (!form.email || !form.password) {
+    const cleanEmail = form.email.trim().toLowerCase();
+    if (!cleanEmail || !form.password) {
       setError("Please enter your email and password.");
       return;
     }
     try {
       setLoading(true);
-      const res = await API.post("/auth/login", form);
+      const res = await API.post("/auth/login", {
+        email: cleanEmail,
+        password: form.password
+      });
       login(res.data.data);
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || "Invalid credentials. Please verify and try again.");
+      let msg = "Invalid credentials. Please verify and try again.";
+      if (err?.response?.data?.detail) {
+        if (typeof err.response.data.detail === "string") {
+          msg = err.response.data.detail;
+        } else if (err.response.data.detail.message) {
+          msg = err.response.data.detail.message;
+        } else if (Array.isArray(err.response.data.detail) && err.response.data.detail[0]?.msg) {
+          msg = err.response.data.detail[0].msg;
+        }
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

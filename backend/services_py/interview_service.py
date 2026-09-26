@@ -162,6 +162,8 @@ Return ONLY valid JSON matching:
                 "correctAnswer": "Provide structured explanation covering definition, trade-offs, and implementation details.",
                 "topicCategory": "Engineering Fundamentals"
             }
+        else:
+            eval_result["attemptStatus"] = "Attempted"
 
         db = get_database()
         score = eval_result.get("score", 70)

@@ -12,7 +12,11 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+        if not plain_password or not hashed_password:
+            return False
+        plain_bytes = plain_password.encode("utf-8") if isinstance(plain_password, str) else plain_password
+        hash_bytes = hashed_password.encode("utf-8") if isinstance(hashed_password, str) else hashed_password
+        return bcrypt.checkpw(plain_bytes, hash_bytes)
     except Exception:
         return False
 

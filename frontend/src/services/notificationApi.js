@@ -4,6 +4,10 @@ import api from "./api";
  * Fetch paginated notifications with optional type and unread filters
  */
 export async function fetchNotifications(params = {}) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return { notifications: [], total: 0, unreadCount: 0 };
+  }
   const query = new URLSearchParams();
   if (params.page) query.append("page", params.page);
   if (params.limit) query.append("limit", params.limit);
@@ -20,6 +24,10 @@ export async function fetchNotifications(params = {}) {
  * Fetch unread count for the notification bell
  */
 export async function fetchUnreadCount() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return 0;
+  }
   const response = await api.get("/notifications/unread-count");
   return response?.data?.data?.count || 0;
 }

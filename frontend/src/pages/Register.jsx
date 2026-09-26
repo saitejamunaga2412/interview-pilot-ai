@@ -52,17 +52,31 @@ export default function Register() {
       setError("Passwords do not match.");
       return;
     }
+    const cleanName = form.name.trim();
+    const cleanEmail = form.email.trim().toLowerCase();
     try {
       setLoading(true);
       const res = await API.post("/auth/register", {
-        name: form.name,
-        email: form.email,
+        name: cleanName,
+        email: cleanEmail,
         password: form.password
       });
       login(res.data.data);
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || "Registration failed. Please check your details.");
+      let msg = "Registration failed. Please check your details.";
+      if (err?.response?.data?.detail) {
+        if (typeof err.response.data.detail === "string") {
+          msg = err.response.data.detail;
+        } else if (err.response.data.detail.message) {
+          msg = err.response.data.detail.message;
+        } else if (Array.isArray(err.response.data.detail) && err.response.data.detail[0]?.msg) {
+          msg = err.response.data.detail[0].msg;
+        }
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

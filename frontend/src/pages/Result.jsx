@@ -85,26 +85,25 @@ const Result = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-bg-base text-text-primary p-6 sm:p-8 animate-fade-in">
+      <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Header */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-3">
+        <div className="bg-surface border border-border rounded-2xl shadow-xl p-6 sm:p-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary font-display mb-2">
             Interview Performance Report
           </h1>
-
-          <p className="text-gray-500">
-            Detailed analysis of your interview performance
+          <p className="text-text-secondary text-sm sm:text-base">
+            Detailed aggregate analytics and historical breakdown of your mock interview performance
           </p>
         </div>
 
         {/* Overall Score */}
-        <div className="bg-blue-50 border-l-8 border-blue-500 rounded-3xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-blue-700 mb-6">
-            Overall Score
+        <div className="bg-surface border border-primary-500/30 rounded-2xl shadow-xl p-6 sm:p-8 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary-500 to-secondary-500" />
+          <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2">
+            <span>Average Readiness Index</span>
           </h2>
-
           <ScoreCard score={averageScore} />
         </div>
 
@@ -112,18 +111,20 @@ const Result = () => {
         <div className="grid md:grid-cols-2 gap-6">
 
           {/* Strengths */}
-          <div className="bg-green-50 border-l-8 border-green-500 rounded-3xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-green-700 mb-5">
-              Strengths
+          <div className="bg-surface border border-emerald-500/30 rounded-2xl shadow-xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
+            <h2 className="text-xl font-bold text-emerald-400 mb-5 flex items-center gap-2">
+              <FaCheckCircle className="text-emerald-400" />
+              <span>Demonstrated Strengths</span>
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {strengths.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-xl shadow p-4 flex items-center gap-3"
+                  className="bg-surface-2 border border-border/80 rounded-xl p-4 flex items-center gap-3 text-sm text-text-primary shadow-sm"
                 >
-                  <FaCheckCircle className="text-green-600 text-xl" />
+                  <FaCheckCircle className="text-emerald-400 shrink-0 text-base" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -131,18 +132,20 @@ const Result = () => {
           </div>
 
           {/* Weaknesses */}
-          <div className="bg-red-50 border-l-8 border-red-500 rounded-3xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-red-700 mb-5">
-              Areas to Improve
+          <div className="bg-surface border border-amber-500/30 rounded-2xl shadow-xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
+            <h2 className="text-xl font-bold text-amber-400 mb-5 flex items-center gap-2">
+              <FaExclamationTriangle className="text-amber-400" />
+              <span>Target Growth Areas</span>
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {weaknesses.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-xl shadow p-4 flex items-center gap-3"
+                  className="bg-surface-2 border border-border/80 rounded-xl p-4 flex items-center gap-3 text-sm text-text-primary shadow-sm"
                 >
-                  <FaExclamationTriangle className="text-red-600 text-xl" />
+                  <FaExclamationTriangle className="text-amber-400 shrink-0 text-base" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -152,22 +155,25 @@ const Result = () => {
         </div>
 
         {/* PDF Button */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mt-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-5">
-            Download Interview Report
+        <div className="bg-surface border border-border rounded-2xl shadow-xl p-6 sm:p-8 text-center space-y-4">
+          <h2 className="text-xl font-bold text-text-primary">
+            Official Evaluation Dossier
           </h2>
+          <p className="text-text-muted text-sm max-w-md mx-auto">
+            Generate and export a comprehensive PDF evaluation dossier with answers, scores, and recruiter feedback.
+          </p>
 
           <button
             onClick={downloadLatestReport}
             disabled={downloading || history.length === 0}
-            className={`px-8 py-4 rounded-2xl flex items-center gap-3 mx-auto shadow-lg text-white ${
+            className={`px-8 py-3.5 rounded-xl font-medium flex items-center justify-center gap-2.5 mx-auto shadow-lg transition-all ${
               downloading || history.length === 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
+                ? "bg-surface-3 text-text-muted cursor-not-allowed border border-border"
+                : "bg-primary-600 hover:bg-primary-500 text-white shadow-primary-500/20 active:scale-95"
             }`}
           >
-            <FaFilePdf />
-            {downloading ? "Downloading..." : "Download PDF Report"}
+            <FaFilePdf className="text-lg" />
+            <span>{downloading ? "Generating PDF Dossier..." : "Download Official PDF Report"}</span>
           </button>
         </div>
 

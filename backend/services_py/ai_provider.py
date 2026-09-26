@@ -21,11 +21,12 @@ class GeminiProvider:
         candidate_list = [configured] if configured else ["gemini-flash-lite-latest"]
         standard_models = [
             "gemini-flash-lite-latest",
-            "gemini-3.8-flash",
             "gemini-flash-latest",
-            "gemini-3.1-flash-lite",
+            "gemini-2.5-flash-lite",
             "gemini-2.5-flash",
-            "gemini-1.5-flash"
+            "gemini-3.8-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-pro-latest"
         ]
         for m in standard_models:
             if m not in candidate_list:
@@ -54,13 +55,14 @@ class GeminiProvider:
             "contents": [{"parts": [{"text": safe_prompt}]}],
             "generationConfig": {
                 "temperature": 0.4,
-                "maxOutputTokens": 2048 if is_json else 900
+                "maxOutputTokens": 2048 if is_json else 2500
             }
         }
         if is_json:
             payload["generationConfig"]["responseMimeType"] = "application/json"
 
-        per_model_timeout = httpx.Timeout(min(self.timeout, 8.0), connect=3.0)
+        # Allow sufficient time for full, comprehensive lesson generation (up to 20s per model)
+        per_model_timeout = httpx.Timeout(min(self.timeout, 20.0), connect=5.0)
         async with httpx.AsyncClient(timeout=per_model_timeout) as client:
             for model_name in models:
                 try:
@@ -78,6 +80,11 @@ class GeminiProvider:
                         err_msg = resp.text
                         if resp.status_code == 401:
                             logger.warning(f"[GeminiProvider] Model {model_name} HTTP 401: Invalid API key. Ensure GEMINI_API_KEY in backend/.env is a valid Google AI Studio key (starts with AIzaSy...).")
+                            break
+                        elif resp.status_code == 429:
+                            logger.warning(f"[GeminiProvider] Project quota reached (HTTP 429). Fast-failing to curated fallback engine.")
+                            last_error = RuntimeError(f"Gemini quota exceeded (429)")
+                            break
                         else:
                             logger.warning(f"[GeminiProvider] Model {model_name} HTTP {resp.status_code}: {err_msg[:120]}")
                         last_error = RuntimeError(f"Gemini {model_name} HTTP {resp.status_code}: {err_msg[:120]}")

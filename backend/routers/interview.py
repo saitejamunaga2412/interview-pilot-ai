@@ -67,23 +67,29 @@ async def get_history(current_user: Dict[str, Any] = Depends(get_current_user)):
 @result_router.get("/session/{session_id}")
 async def get_session(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
     user_id = current_user["id"]
-    details = await interview_service.get_session_details(user_id, session_id)
-    return {
-        "success": True,
-        "message": "Session details retrieved successfully",
-        "data": details
-    }
+    try:
+        details = await interview_service.get_session_details(user_id, session_id)
+        return {
+            "success": True,
+            "message": "Session details retrieved successfully",
+            "data": details
+        }
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Session not found")
 
 @result_router.delete("/session/{session_id}")
 @result_router.delete("/delete/{session_id}")
 async def delete_session(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
     user_id = current_user["id"]
-    res = await interview_service.delete_session(user_id, session_id)
-    return {
-        "success": True,
-        "message": res["message"],
-        "data": None
-    }
+    try:
+        res = await interview_service.delete_session(user_id, session_id)
+        return {
+            "success": True,
+            "message": res["message"],
+            "data": None
+        }
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Session not found")
 
 @result_router.delete("/clear")
 @result_router.delete("/clear-history")

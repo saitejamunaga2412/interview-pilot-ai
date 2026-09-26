@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # AI Engine (Google Gemini Only)
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-flash-lite-latest"
-    GEMINI_TIMEOUT: float = 12.0
+    GEMINI_TIMEOUT: float = 25.0
     
     # Code Execution Sandbox (Judge0)
     JUDGE0_URL: str = ""
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASS: str = ""
-    SMTP_FROM: str = "InterviewPilot AI <no-reply@interviewpilot.ai>"
+    SMTP_FROM: str = "InterviewPilot AI <interviewpilotai.notify@gmail.com>"
     EMAIL_TEST_MODE: bool = False
     
     # Uploads
@@ -48,6 +48,26 @@ class Settings(BaseSettings):
     class Config:
         env_file = str(BASE_DIR / ".env")
         extra = "allow"
+
+    def get_frontend_url(self, request=None) -> str:
+        if request is not None:
+            origin = request.headers.get("origin")
+            referer = request.headers.get("referer")
+            if origin and any(origin.startswith(prefix) for prefix in ["http://localhost", "http://127.0.0.1", "https://"]):
+                return origin.rstrip("/")
+            if referer:
+                from urllib.parse import urlparse
+                p = urlparse(referer)
+                if p.scheme and p.netloc:
+                    return f"{p.scheme}://{p.netloc}"
+
+        from pathlib import Path
+        from dotenv import dotenv_values
+        env_path = BASE_DIR / ".env"
+        env_vals = dotenv_values(env_path) if env_path.exists() else {}
+        configured = env_vals.get("FRONTEND_URL") or self.FRONTEND_URL or "http://localhost:5173"
+        raw_urls = configured.split(",")
+        return raw_urls[0].strip().rstrip("/") if raw_urls else "http://localhost:5173"
 
 settings = Settings()
 

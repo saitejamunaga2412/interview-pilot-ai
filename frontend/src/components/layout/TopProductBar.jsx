@@ -31,15 +31,23 @@ export default function TopProductBar({ onMobileMenuToggle, isMobileMenuOpen }) 
   const notifRef = useRef(null);
 
   const loadUnreadCount = useCallback(async () => {
+    if (!user || !localStorage.getItem("token")) {
+      setUnreadCount(0);
+      return;
+    }
     try {
       const count = await fetchUnreadCount();
       setUnreadCount(count);
     } catch (e) {
       // silent fallback
     }
-  }, []);
+  }, [user]);
 
   const loadLatestNotifications = useCallback(async () => {
+    if (!user || !localStorage.getItem("token")) {
+      setNotifications([]);
+      return;
+    }
     try {
       setLoadingNotifs(true);
       const data = await fetchNotifications({ limit: 5 });
@@ -52,13 +60,18 @@ export default function TopProductBar({ onMobileMenuToggle, isMobileMenuOpen }) 
     } finally {
       setLoadingNotifs(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      setNotifications([]);
+      return;
+    }
     loadUnreadCount();
     const interval = setInterval(loadUnreadCount, 45000);
     return () => clearInterval(interval);
-  }, [loadUnreadCount]);
+  }, [loadUnreadCount, user]);
 
   useEffect(() => {
     if (notifOpen) {

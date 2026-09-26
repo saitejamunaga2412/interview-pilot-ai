@@ -69,6 +69,16 @@ class ProfileService:
             raise ValueError("Invalid user ID")
 
         set_fields = {}
+        if "email" in payload and payload["email"] is not None:
+            new_email = str(payload["email"]).strip().lower()
+            import re
+            if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", new_email):
+                raise ValueError("Invalid email format.")
+            existing = await db["users"].find_one({"email": new_email, "_id": {"$ne": user_oid}})
+            if existing:
+                raise ValueError("Email address is already in use by another account.")
+            set_fields["email"] = new_email
+
         top_level = ["name", "phoneNumber", "dateOfBirth", "gender", "profilePhoto", "resumeUrl", "onboardingCompleted"]
         for f in top_level:
             if f in payload:

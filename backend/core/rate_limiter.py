@@ -10,11 +10,20 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
     Lightweight, in-memory sliding-window rate limiter for sensitive and expensive endpoints.
     Protects login/registration from brute-force and AI/Execution endpoints from quota exhaustion.
     """
+    _instance = None
+
     def __init__(self, app):
         super().__init__(app)
         # Stores IP -> list of request timestamps
         self.requests = defaultdict(list)
         self.last_cleanup = time.time()
+        RateLimiterMiddleware._instance = self
+
+    @classmethod
+    def clear_requests(cls):
+        """Clears request history for test suite isolation."""
+        if cls._instance:
+            cls._instance.requests.clear()
 
     def get_client_ip(self, request: Request) -> str:
         forwarded = request.headers.get("X-Forwarded-For")
@@ -22,10 +31,27 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "127.0.0.1"
 
+    def is_authorized_test_bypass(self, request: Request) -> bool:
+        """
+        Only allows bypassing rate limits if the environment is EXPLICITLY configured
+        as a dedicated test environment AND the explicit bypass flag is enabled.
+        Production and Development environments strictly ignore the x-test-client header.
+        """
+        env = os.environ.get("ENVIRONMENT", "").strip().lower()
+        allow_bypass = os.environ.get("ALLOW_TEST_HEADER_BYPASS", "").strip().lower() in ("1", "true")
+        if env == "test" and allow_bypass:
+            return request.headers.get("x-test-client") == "interviewpilot-test-runner"
+        return False
+
     async def dispatch(self, request: Request, call_next):
-        # Exclude static files, health checks, options preflights, and pytest test runs
+        # Exclude static files, health checks, options preflights, and authorized test runners
         path = request.url.path
-        if request.method == "OPTIONS" or path in ("/api/health", "/health") or path.startswith("/uploads") or "PYTEST_CURRENT_TEST" in os.environ:
+        if (
+            request.method == "OPTIONS"
+            or path in ("/api/health", "/health")
+            or path.startswith("/uploads")
+            or self.is_authorized_test_bypass(request)
+        ):
             return await call_next(request)
 
         now = time.time()

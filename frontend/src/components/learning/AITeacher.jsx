@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import api from "../../services/api";
 import { FaPaperPlane, FaRobot, FaUser } from "react-icons/fa";
-import InteractiveVisualizer from "./visualizer/InteractiveVisualizer";
+import AIMessageRenderer from "./AIMessageRenderer";
 
 export default function AITeacher({ topicId, topicTitle }) {
   const [messages, setMessages] = useState([
@@ -94,47 +94,7 @@ export default function AITeacher({ topicId, topicTitle }) {
   };
 
   const renderMessageContent = (content, msgIdx) => {
-    if (!content) return null;
-    const parts = content.split(/(```[\s\S]*?```)/g);
-
-    return parts.map((part, pIdx) => {
-      if (part.startsWith("```")) {
-        const lines = part.slice(3, -3).trim().split("\n");
-        const language = (lines[0].trim() || "code").toLowerCase();
-        const codeText = (lines.length > 1 ? lines.slice(1).join("\n") : lines.join("\n")).trim();
-
-        if (language === "visualization") {
-          try {
-            const visualData = JSON.parse(codeText);
-            return (
-              <InteractiveVisualizer 
-                key={`${msgIdx}-${pIdx}`} 
-                data={visualData} 
-              />
-            );
-          } catch (e) {
-            console.error("Failed to parse visualizer data", e);
-          }
-        }
-
-        return (
-          <div key={pIdx} className="my-2 rounded-lg overflow-hidden bg-[#070914] border border-gray-700">
-            <div className="bg-gray-800 px-3 py-1 text-[11px] font-mono text-gray-400 border-b border-gray-700 uppercase font-bold">
-              {language}
-            </div>
-            <pre className="p-3 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed">
-              <code>{codeText}</code>
-            </pre>
-          </div>
-        );
-      }
-
-      return (
-        <div key={pIdx} className="whitespace-pre-wrap leading-relaxed text-sm">
-          {part}
-        </div>
-      );
-    });
+    return <AIMessageRenderer content={content} msgIdx={msgIdx} />;
   };
 
   return (

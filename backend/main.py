@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 
 from core.config import settings
 from core.database import get_database
-from services_py.scheduler import start_scheduler
+from services_py.scheduler import start_scheduler, stop_scheduler
 
 # Routers
 from routers.auth import router as auth_router
@@ -49,6 +49,7 @@ async def lifespan(app: FastAPI):
     start_scheduler()
     yield
     # Shutdown
+    stop_scheduler()
     print("[InterviewPilot AI] Shutting down.")
 
 app = FastAPI(

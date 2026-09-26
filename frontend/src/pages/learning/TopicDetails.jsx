@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import api from "../../services/api";
 import TopicQuiz from "../../components/learning/TopicQuiz";
+import AITeacher from "../../components/learning/AITeacher";
 import { 
   FaBook, FaCode, FaCheckDouble, FaExclamationTriangle, 
   FaLightbulb, FaArrowRight, FaBrain, FaProjectDiagram, 
@@ -792,7 +793,12 @@ export default function TopicDetails() {
           </Link>
         </section>
 
-        {/* 9. Quiz Check */}
+        {/* 9. Interactive AI Placement Mentor */}
+        <section>
+          <AITeacher topicId={topic.topicId || topicId} topicTitle={topic.title} />
+        </section>
+
+        {/* 10. Quiz Check */}
         {topic.quiz && topic.quiz.length > 0 && (
           <section className="bg-surface p-6 sm:p-8 rounded-3xl border border-border shadow-sm">
             <h2 className="text-lg sm:text-xl font-bold mb-6 flex items-center gap-2 text-text-primary">

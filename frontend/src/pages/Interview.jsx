@@ -7,7 +7,7 @@ import {
   Zap, Code2, Database, Brain, Timer, 
   CheckCircle2, ChevronRight, AlertCircle, ArrowLeft, ArrowRight,
   ShieldCheck, Volume2, VolumeX, Mic, MicOff, Sparkles, Award, Star,
-  Building, Printer, Download
+  Building, Printer, Download, Camera, CameraOff, Video
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
@@ -137,11 +137,63 @@ export default function Interview() {
     isSpeaking,
     supportsSTT,
     supportsTTS,
+    speechError,
     startListening,
     stopListening,
     speak,
     stopSpeaking
   } = useSpeech();
+
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const videoRef = React.useRef(null);
+  const mediaStreamRef = React.useRef(null);
+
+  const toggleCamera = async () => {
+    setCameraError("");
+    if (cameraEnabled) {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      setCameraEnabled(false);
+      return;
+    }
+
+    try {
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        setCameraError("Camera access is not supported in this browser.");
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+      mediaStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setCameraEnabled(true);
+    } catch (err) {
+      console.warn("[Interview] Camera permission denied or device not found:", err);
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        setCameraError("Camera permission was denied. You can proceed with voice or text.");
+      } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+        setCameraError("No camera device detected on your system.");
+      } else {
+        setCameraError("Could not access camera. You can proceed with voice or text.");
+      }
+      setCameraEnabled(false);
+    }
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
 
   const applyCompanyPack = (pack) => {
     setSelectedCompanyId(pack.id);
@@ -418,12 +470,28 @@ export default function Interview() {
             </span>
           </div>
 
-          {isTimedInterview && (
-            <div className="flex items-center gap-2 bg-primary-500/10 text-primary-400 border border-primary-500/20 px-3 py-1.5 rounded-lg font-mono font-bold text-sm">
-              <Timer className="w-4 h-4 animate-pulse text-primary-400" />
-              <span>{formatTime(timeLeft)}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleCamera}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                cameraEnabled
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                  : "bg-surface-2 text-text-secondary hover:text-text-primary border-border"
+              }`}
+              title="Toggle Webcam Preview"
+            >
+              {cameraEnabled ? <Camera className="w-3.5 h-3.5 text-emerald-400" /> : <CameraOff className="w-3.5 h-3.5 text-text-muted" />}
+              <span>{cameraEnabled ? "Camera ON" : "Camera OFF"}</span>
+            </button>
+
+            {isTimedInterview && (
+              <div className="flex items-center gap-2 bg-primary-500/10 text-primary-400 border border-primary-500/20 px-3 py-1.5 rounded-lg font-mono font-bold text-sm">
+                <Timer className="w-4 h-4 animate-pulse text-primary-400" />
+                <span>{formatTime(timeLeft)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Studio split view */}
@@ -433,28 +501,51 @@ export default function Interview() {
           <div className="lg:col-span-6 bg-surface border border-border rounded-2xl p-6 flex flex-col justify-between min-h-[360px] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/5 rounded-full blur-3xl pointer-events-none" />
             
-            {/* Visualizer avatar */}
-            <div className="flex flex-col items-center justify-center py-6 relative z-10">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-primary-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-xl relative animate-pulse">
-                <Bot className="w-9 h-9" />
-                <span className="absolute inset-0 rounded-full border border-primary-400 animate-ping opacity-25" />
+            {/* Visualizer avatar or Live Camera Preview */}
+            {cameraEnabled ? (
+              <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 bg-black aspect-video max-w-[340px] w-full mx-auto shadow-xl">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover transform -scale-x-100"
+                />
+                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-black/70 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span>WEBCAM ACTIVE</span>
+                </span>
               </div>
-              <p className="text-[10px] font-mono uppercase text-text-muted mt-3 tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>AI Interviewer Speaking</span>
-              </p>
-              
-              {/* Fake soundwave simulation lines */}
-              <div className="flex items-center gap-1.5 mt-3.5 h-6">
-                {[4, 10, 6, 12, 8, 14, 10, 16, 12, 18, 10, 16, 8, 14, 6, 12, 4].map((h, i) => (
-                  <div 
-                    key={i} 
-                    className="w-[3px] bg-primary-400/80 rounded-full transition-all duration-300 animate-pulse" 
-                    style={{ height: `${h}px`, animationDelay: `${i * 0.05}s` }} 
-                  />
-                ))}
+            ) : (
+              <div className="flex flex-col items-center justify-center py-6 relative z-10">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-primary-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-xl relative animate-pulse">
+                  <Bot className="w-9 h-9" />
+                  <span className="absolute inset-0 rounded-full border border-primary-400 animate-ping opacity-25" />
+                </div>
+                <p className="text-[10px] font-mono uppercase text-text-muted mt-3 tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>AI Interviewer Speaking</span>
+                </p>
+                
+                {/* Soundwave simulation lines */}
+                <div className="flex items-center gap-1.5 mt-3.5 h-6">
+                  {[4, 10, 6, 12, 8, 14, 10, 16, 12, 18, 10, 16, 8, 14, 6, 12, 4].map((h, i) => (
+                    <div 
+                      key={i} 
+                      className="w-[3px] bg-primary-400/80 rounded-full transition-all duration-300 animate-pulse" 
+                      style={{ height: `${h}px`, animationDelay: `${i * 0.05}s` }} 
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {cameraError && (
+              <div className="mt-3 flex items-start gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{cameraError}</span>
+              </div>
+            )}
 
             {/* Question detail box */}
             <div className="p-4 rounded-xl border border-border bg-bg-base/70 relative z-10 space-y-3 mt-4">
@@ -522,6 +613,13 @@ export default function Interview() {
                     <span className="text-[10px] text-text-muted font-mono hidden sm:inline">Max 3000 chars</span>
                   </div>
                 </div>
+
+                {speechError && (
+                  <div className="flex items-start gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs leading-normal">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{speechError} You can type your answer directly in the text editor below.</span>
+                  </div>
+                )}
 
                 <textarea
                   rows="12"

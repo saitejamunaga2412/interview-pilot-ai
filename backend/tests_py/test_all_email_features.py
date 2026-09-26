@@ -110,10 +110,13 @@ async def test_email_feature_suite():
         # -------------------------------------------------------------
         # 6. Scheduler Execution & Duplicate Prevention
         # -------------------------------------------------------------
+        from services_py.scheduler import get_user_now
+        user_now = get_user_now(user_in_db)
+        today_str = user_now.strftime("%Y-%m-%d")
+        dedupe_key = f"daily_reminder_{str(user_in_db['_id'])}_{today_str}"
+
         # Run daily reminder job once
         await daily_reminder_job()
-        today_str = datetime.utcnow().strftime("%Y-%m-%d")
-        dedupe_key = f"daily_reminder_{str(user_in_db['_id'])}_{today_str}"
 
         # Notification should have been recorded with dedupeKey
         notif_1 = await db["notifications"].count_documents({"dedupeKey": dedupe_key})
@@ -126,7 +129,8 @@ async def test_email_feature_suite():
 
         # Run weekly summary job once
         await weekly_summary_job()
-        week_str = datetime.utcnow().strftime("%Y-W%W")
+        week_str = user_now.strftime("%Y-W%W")
         weekly_dedupe = f"weekly_summary_{str(user_in_db['_id'])}_{week_str}"
         weekly_notif = await db["notifications"].count_documents({"dedupeKey": weekly_dedupe})
         assert weekly_notif == 1
+

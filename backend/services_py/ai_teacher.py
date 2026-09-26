@@ -54,6 +54,19 @@ VISUALIZATION_TEMPLATES: Dict[str, Dict[str, Any]] = {
             {"description": "Step 3: Set R = Mid - 1 = 6. Search range [5..6]. New Mid = 5 (value: 23). 23 == 23! Target found at index 5 in only 3 steps!", "left": 5, "right": 6, "mid": 5, "action": "found"}
         ]
     },
+    "linear_search": {
+        "type": "linear_search",
+        "title": "Linear Search ($O(n)$)",
+        "initial": [4, 7, 2, 9, 5, 1, 8],
+        "target": 5,
+        "steps": [
+            {"description": "Step 1: Check index 0 (value: 4). 4 != 5 -> Move pointer to next element.", "highlight": [0], "action": "compare", "array": [4, 7, 2, 9, 5, 1, 8]},
+            {"description": "Step 2: Check index 1 (value: 7). 7 != 5 -> Move pointer to next element.", "highlight": [1], "action": "compare", "array": [4, 7, 2, 9, 5, 1, 8]},
+            {"description": "Step 3: Check index 2 (value: 2). 2 != 5 -> Move pointer to next element.", "highlight": [2], "action": "compare", "array": [4, 7, 2, 9, 5, 1, 8]},
+            {"description": "Step 4: Check index 3 (value: 9). 9 != 5 -> Move pointer to next element.", "highlight": [3], "action": "compare", "array": [4, 7, 2, 9, 5, 1, 8]},
+            {"description": "Step 5: Check index 4 (value: 5). 5 == 5! Target found at index 4.", "highlight": [4], "action": "found", "array": [4, 7, 2, 9, 5, 1, 8]}
+        ]
+    },
     "stack": {
         "type": "stack",
         "title": "Stack LIFO Operations",
@@ -309,9 +322,11 @@ CRITICAL RULES:
 5. No Fluff: Avoid long robotic preamble or boilerplate text.
 6. Interactive Visual Learning: When the student asks to learn, explain, or visualize a core data structure, algorithm, or technique (such as Arrays, Array Insertion/Deletion, Binary Search, Linear Search, Stack, Queue, Linked List, Binary Tree, Sorting, Two Pointers, Sliding Window, Hash Map), or asks 'Show me how it works':
    - Provide: Simple Explanation -> Real-World Analogy -> Step-by-Step Breakdown -> Interactive Visual Representation (embedded ```visualization block) -> Worked Example -> Dry Run -> Clean Code -> Time & Space Complexity -> Interview Tips -> Practice Question.
-   - For interactive visual representation, embed a ```visualization code block containing valid JSON matching one of the supported types (array_insertion, array_deletion, array_traversal, binary_search, stack, queue, linked_list, two_pointers, sliding_window, sorting, binary_tree, hash_map) with clear step descriptions and highlights.
+   - For interactive visual representation, embed a ```visualization code block containing valid JSON matching one of the supported types (array_insertion, array_deletion, array_traversal, binary_search, linear_search, stack, queue, linked_list, two_pointers, sliding_window, sorting, binary_tree, hash_map) with clear step descriptions and highlights.
    - Do NOT include a visualization code block for simple definition queries (e.g. 'What is an array?') or greetings.
-   - If the student says 'I don't understand', simplify the explanation and include the visual representation."""
+   - If the student says 'I don't understand', simplify the explanation and include the visual representation.
+7. Output Integrity & No Raw SVG: NEVER output raw SVG XML code or raw <svg> tags. Format visualizations ONLY as ```visualization JSON blocks. Ensure explanations are completely finished through Time Complexity, Space Complexity, Interview Tips, and a Practice Question without being cut off.
+"""
 
         formatted_history = "\n".join(
             [f"{'Student' if h.get('role') == 'user' else 'Assistant'}: {h.get('content')}" for h in history[-6:]]
@@ -322,7 +337,7 @@ CRITICAL RULES:
         t_llm_start = time.time()
         provider_name = "gemini"
         try:
-            gen_res = await asyncio.wait_for(ai_provider.generate(prompt), timeout=12.0)
+            gen_res = await asyncio.wait_for(ai_provider.generate(prompt), timeout=24.0)
             reply = gen_res.get("text", "")
             provider_name = gen_res.get("provider", "gemini")
         except Exception as e:
@@ -394,7 +409,7 @@ CRITICAL RULES:
         elif "binary search" in msg_lower:
             chosen_key = "binary_search"
         elif "linear search" in msg_lower:
-            chosen_key = "array_traversal"
+            chosen_key = "linear_search"
         elif "two pointer" in msg_lower:
             chosen_key = "two_pointers"
         elif "sliding window" in msg_lower:
@@ -418,6 +433,8 @@ CRITICAL RULES:
             combined_lower = combined_context.lower()
             if "binary search" in combined_lower:
                 chosen_key = "binary_search"
+            elif "linear search" in combined_lower:
+                chosen_key = "linear_search"
             elif "insertion" in combined_lower:
                 chosen_key = "array_insertion"
             elif "deletion" in combined_lower:
@@ -430,6 +447,13 @@ CRITICAL RULES:
                 chosen_key = "queue"
             elif "linked list" in combined_lower:
                 chosen_key = "linked_list"
+
+        # If reply contains raw ```svg code block, replace it with rich interactive visualization if template available
+        if "```svg" in reply.lower() and chosen_key and chosen_key in VISUALIZATION_TEMPLATES:
+            vis_data = VISUALIZATION_TEMPLATES[chosen_key]
+            vis_block = f"\n\n```visualization\n{json.dumps(vis_data, indent=2)}\n```\n\n"
+            reply = re.sub(r"```svg[\s\S]*?```", vis_block, reply, flags=re.IGNORECASE)
+            return reply, vis_data
 
         if chosen_key and chosen_key in VISUALIZATION_TEMPLATES:
             vis_data = VISUALIZATION_TEMPLATES[chosen_key]
@@ -522,15 +546,70 @@ CRITICAL RULES:
         if "binary search" in msg or ("don't understand" in msg and "binary" in str(history)):
             vis_data = VISUALIZATION_TEMPLATES["binary_search"]
             return (
-                "### 📚 Binary Search ($O(\\log n)$)\n\n"
-                "Binary search locates a target value in a **sorted array** by repeatedly dividing the search space in half.\n\n"
-                "### 💡 Real-World Analogy\n"
-                "Like searching for a word in a dictionary: you open the middle. If your word comes later alphabetically, you ignore the entire left half!\n\n"
+                "### 📚 1. Simple Explanation\n"
+                "**Binary Search** is an efficient search algorithm that finds the position of a target value within a **sorted array** in $O(\\log n)$ time by repeatedly halving the search space.\n\n"
+                "### 💡 2. Real-World Analogy\n"
+                "Think of searching for a word in a printed dictionary: you open directly to the middle. If your word comes alphabetically later, you immediately ignore the entire left half of the dictionary!\n\n"
+                "### 🔍 3. Step-by-Step Logic\n"
+                "1. Maintain two pointers: `left = 0` and `right = len(arr) - 1`.\n"
+                "2. Find the midpoint: `mid = left + (right - left) // 2` to prevent 32-bit integer overflow.\n"
+                "3. If `arr[mid] == target`: Target found! Return `mid`.\n"
+                "4. If `arr[mid] < target`: Target is in the right half -> Set `left = mid + 1`.\n"
+                "5. If `arr[mid] > target`: Target is in the left half -> Set `right = mid - 1`.\n"
+                "6. If `left > right`: The target does not exist in the array -> Return `-1`.\n\n"
                 f"```visualization\n{json.dumps(vis_data, indent=2)}\n```\n\n"
-                "### 💻 Code Implementation\n"
-                "```python\ndef binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = left + (right - left) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```\n\n"
-                "- **Time Complexity:** $O(\\log n)$\n"
-                "- **Space Complexity:** $O(1)$"
+                "### 💻 4. Python Implementation\n"
+                "```python\ndef binary_search(arr: list[int], target: int) -> int:\n    left, right = 0, len(arr) - 1\n    \n    while left <= right:\n        mid = left + (right - left) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n            \n    return -1\n```\n\n"
+                "### 🏃 5. Dry Run Walkthrough\n"
+                "For sorted array `[2, 5, 8, 12, 16, 23, 38, 56, 72, 91]` with `target = 23`:\n"
+                "- **Step 1:** `left = 0`, `right = 9` -> `mid = 4` (`arr[4] = 16`). Since $16 < 23$, eliminate left half: `left = 5`.\n"
+                "- **Step 2:** `left = 5`, `right = 9` -> `mid = 7` (`arr[7] = 56`). Since $56 > 23$, eliminate right half: `right = 6`.\n"
+                "- **Step 3:** `left = 5`, `right = 6` -> `mid = 5` (`arr[5] = 23`). Target found at index `5` in just 3 operations!\n\n"
+                "### ⏱️ 6. Time & Space Complexity\n"
+                "- **Best Case Time:** $O(1)$ (target located at initial midpoint)\n"
+                "- **Average & Worst Case Time:** $O(\\log n)$ (divides array by 2 at each iteration)\n"
+                "- **Auxiliary Space:** $O(1)$ (iterative approach uses constant memory)\n\n"
+                "### 💡 7. Common Pitfalls & Interview Tips\n"
+                "- **Boundary Condition:** Always use `while left <= right:` — using `<` misses single-element ranges.\n"
+                "- **Sorted Requirement:** Binary search strictly requires the data to be sorted or monotonic.\n"
+                "- **Overflow:** In Java/C++, use `mid = left + (right - left) / 2` instead of `(left + right) / 2`.\n\n"
+                "### 🎯 8. Practice Question\n"
+                "Given a sorted array of distinct integers, how would you find the index of the first element greater than or equal to a given target using binary search (lower bound)?"
+            )
+
+        # Linear Search
+        if "linear search" in msg:
+            vis_data = VISUALIZATION_TEMPLATES["linear_search"]
+            return (
+                "### 📚 1. Simple Explanation\n"
+                "**Linear Search** sequentially checks each element of a list one-by-one from the beginning until a match is found or the end is reached. It works on both **unsorted** and sorted arrays.\n\n"
+                "### 💡 2. Real-World Analogy\n"
+                "Like searching for a lost key in an unorganized box of tools: you pick up items one after another in order until you spot the key.\n\n"
+                "### 🔍 3. Step-by-Step Logic\n"
+                "1. Start at index `0`.\n"
+                "2. Compare the current item `arr[i]` with `target`.\n"
+                "3. If equal, return the current index `i`.\n"
+                "4. Otherwise, increment `i` and repeat.\n"
+                "5. If loop completes without a match, return `-1`.\n\n"
+                f"```visualization\n{json.dumps(vis_data, indent=2)}\n```\n\n"
+                "### 💻 4. Python Implementation\n"
+                "```python\ndef linear_search(arr: list[int], target: int) -> int:\n    for i, val in enumerate(arr):\n        if val == target:\n            return i\n    return -1\n```\n\n"
+                "### 🏃 5. Dry Run Walkthrough\n"
+                "For `arr = [4, 7, 2, 9, 5, 1, 8]` with `target = 5`:\n"
+                "- `i = 0`: 4 != 5 -> Continue\n"
+                "- `i = 1`: 7 != 5 -> Continue\n"
+                "- `i = 2`: 2 != 5 -> Continue\n"
+                "- `i = 3`: 9 != 5 -> Continue\n"
+                "- `i = 4`: 5 == 5 -> Match found! Return index 4.\n\n"
+                "### ⏱️ 6. Time & Space Complexity\n"
+                "- **Best Case Time:** $O(1)$ (target is at the first index)\n"
+                "- **Worst Case Time:** $O(n)$ (target is at the end or not present)\n"
+                "- **Auxiliary Space:** $O(1)$ constant memory\n\n"
+                "### 💡 7. Pro Interview Tips\n"
+                "- Use Linear Search when the dataset is unsorted and small ($N < 100$), or when sorting overhead is not justified.\n"
+                "- For frequent searches in unsorted data, consider inserting elements into a Hash Map to achieve $O(1)$ lookups.\n\n"
+                "### 🎯 8. Practice Question\n"
+                "How does Linear Search compare with Binary Search when the array has only 10 elements versus 1,000,000 elements?"
             )
 
         # "I don't understand" general recovery

@@ -83,6 +83,8 @@ async def ensure_indexes():
         await db["mistakes"].create_index("userId")
         await db["notifications"].create_index("userId")
         await db["notifications"].create_index([("userId", 1), ("dedupeKey", 1)])
+        await db["notification_deliveries"].create_index("dedupeKey", unique=True)
+        await db["notification_deliveries"].create_index("userId")
         await db["progress"].create_index("userId")
         await db["assessmentattempts"].create_index("userId")
         await db["assessmentattempts"].create_index([("userId", 1), ("status", 1)])

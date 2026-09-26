@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import api from "../services/api";
 import { cn } from "../utils/cn";
-import InteractiveVisualizer from "./learning/visualizer/InteractiveVisualizer";
+import AIMessageRenderer from "./learning/AIMessageRenderer";
 
 export default function GlobalAITutor() {
   const [isOpen, setIsOpen] = useState(false);
@@ -291,56 +291,7 @@ export default function GlobalAITutor() {
   };
 
   const renderMessageContent = (content, msgIdx) => {
-    if (!content) return null;
-    const parts = content.split(/(```[\s\S]*?```)/g);
-    
-    return parts.map((part, pIdx) => {
-      if (part.startsWith("```")) {
-        const lines = part.slice(3, -3).trim().split("\n");
-        const language = (lines[0].trim() || "code").toLowerCase();
-        const codeText = (lines.length > 1 ? lines.slice(1).join("\n") : lines.join("\n")).trim();
-
-        if (language === "visualization") {
-          try {
-            const visualData = JSON.parse(codeText);
-            return (
-              <InteractiveVisualizer 
-                key={`${msgIdx}-${pIdx}`} 
-                data={visualData} 
-              />
-            );
-          } catch (e) {
-            console.error("Failed to parse visualizer data", e);
-          }
-        }
-
-        return (
-          <div key={pIdx} className="my-2 rounded-lg overflow-hidden bg-[#070914] border border-border">
-            <div className="bg-surface-2 px-2.5 py-1 flex justify-between items-center text-[10px] font-mono text-text-muted border-b border-border">
-              <span className="uppercase font-bold text-primary-400">{language}</span>
-              <button 
-                type="button"
-                onClick={() => handleCopy(codeText, `${msgIdx}-${pIdx}`)}
-                className="flex items-center gap-1 hover:text-text-primary transition-colors cursor-pointer"
-                title="Copy code"
-              >
-                {copiedIdx === `${msgIdx}-${pIdx}` ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
-                <span>{copiedIdx === `${msgIdx}-${pIdx}` ? "Copied" : "Copy"}</span>
-              </button>
-            </div>
-            <pre className="p-2.5 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed">
-              <code>{codeText}</code>
-            </pre>
-          </div>
-        );
-      }
-
-      return (
-        <div key={pIdx} className="whitespace-pre-wrap leading-relaxed text-xs">
-          {part}
-        </div>
-      );
-    });
+    return <AIMessageRenderer content={content} msgIdx={msgIdx} />;
   };
 
   return (
