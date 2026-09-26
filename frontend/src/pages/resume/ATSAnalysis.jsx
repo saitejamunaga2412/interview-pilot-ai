@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, FileSearch, Sparkles, CheckCircle2, AlertTriangle, 
   AlertCircle, ArrowRight, UploadCloud, FileText, Check, HelpCircle, 
-  RefreshCw, TrendingUp, Award, Clock, History, ExternalLink, ShieldAlert
+  RefreshCw, TrendingUp, Award, Clock, History, ExternalLink, ShieldAlert, Download
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Container } from '../../components/layout';
 import { Button } from '../../components/ui/Button';
+import { exportAtsReportPdf } from '../../services/reportService';
 
 const TARGET_ROLES = [
   "Software Engineer",
@@ -383,6 +384,17 @@ export default function ATSAnalysis({ dataHook }) {
                 <p className="text-[10px] text-text-muted italic pt-1">
                   Note: The InterviewPilot AI ATS Compatibility Score is an analysis aid, not a guarantee of employer ATS behavior.
                 </p>
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportAtsReportPdf(atsAnalysis, selectedRole || atsAnalysis?.targetRole)}
+                    leftIcon={<Download className="w-4 h-4 text-primary-400" />}
+                    className="cursor-pointer text-xs"
+                  >
+                    Download ATS Report (PDF)
+                  </Button>
+                </div>
               </div>
 
               {/* Radial Score Gauge */}

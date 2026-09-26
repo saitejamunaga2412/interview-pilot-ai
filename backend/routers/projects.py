@@ -80,7 +80,8 @@ async def list_projects(
             "completed": completed_count,
             "inProgress": in_progress_count
         },
-        "projects": serialized
+        "projects": serialized,
+        "data": serialized
     }
 
 @router.post("", status_code=status.HTTP_201_CREATED)

@@ -250,3 +250,101 @@ export async function downloadInterviewReport(sessionId, fallbackData = null) {
     throw error;
   }
 }
+
+/**
+ * Generates an ATS Analysis PDF report using jsPDF and autoTable.
+ */
+export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engineer") {
+  const doc = new jsPDF();
+  const analysis = atsAnalysis?.analysis || atsAnalysis || {};
+  const overallScore = atsAnalysis?.overallScore ?? analysis?.overall_score ?? 0;
+  const role = targetRole || atsAnalysis?.targetRole || "Software Engineer";
+
+  // Header Banner
+  doc.setFillColor(15, 23, 42); // Slate 900
+  doc.rect(0, 0, 210, 26, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text("InterviewPilot AI — Resume ATS Analysis Report", 14, 15);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Generated: ${new Date().toLocaleDateString()}`, 150, 15);
+
+  // Target Role & Score Card
+  doc.setTextColor(15, 23, 42);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text(`Target Role: ${role}`, 14, 38);
+
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(14, 46, 182, 22, 3, 3, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text("ATS Compatibility Score:", 20, 60);
+
+  const scoreColor = overallScore >= 80 ? [16, 185, 129] : overallScore >= 65 ? [6, 182, 212] : [245, 158, 11];
+  doc.setTextColor(...scoreColor);
+  doc.setFontSize(14);
+  doc.text(`${overallScore}/100`, 75, 60);
+
+  // Category Scores Table
+  const categoryScores = analysis.category_scores || {};
+  const catRows = [
+    ["Keyword Match", `${categoryScores.keyword_match ?? 0}%`, "25%"],
+    ["Skills Alignment", `${categoryScores.skills_alignment ?? 0}%`, "20%"],
+    ["Experience Relevance", `${categoryScores.experience_relevance ?? 0}%`, "15%"],
+    ["Projects Relevance", `${categoryScores.projects_relevance ?? 0}%`, "15%"],
+    ["Education", `${categoryScores.education ?? 0}%`, "5%"],
+    ["Structure", `${categoryScores.structure ?? 0}%`, "5%"],
+    ["Formatting", `${categoryScores.formatting ?? 0}%`, "5%"],
+    ["Content Quality", `${categoryScores.content_quality ?? 0}%`, "10%"]
+  ];
+
+  autoTable(doc, {
+    startY: 76,
+    head: [["Evaluation Category", "Score", "Weight"]],
+    body: catRows,
+    headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 9 },
+    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 40, halign: "center", fontStyle: "bold" }, 2: { cellWidth: 40, halign: "center" } },
+    styles: { fontSize: 8.5, cellPadding: 3, textColor: [51, 65, 85] }
+  });
+
+  // Keywords section
+  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 180;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42);
+  doc.text("Detected Keywords:", 14, finalY);
+
+  const detected = (analysis.detected_keywords || []).slice(0, 15).join(", ") || "None";
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text(doc.splitTextToSize(detected, 180), 14, finalY + 6);
+
+  const missingY = finalY + 18;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(220, 38, 38);
+  doc.text("Missing Keywords / Recommended Skills:", 14, missingY);
+
+  const missing = (analysis.missing_keywords || []).slice(0, 12).join(", ") || "None";
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text(doc.splitTextToSize(missing, 180), 14, missingY + 6);
+
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text("InterviewPilot AI • Resume Intelligence Engine • Confidential", 14, 280);
+
+  doc.save(`ATS_Report_${role.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+  return true;
+}

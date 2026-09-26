@@ -16,6 +16,16 @@ async def get_dashboard(current_user: Dict[str, Any] = Depends(get_current_user)
         "data": data
     }
 
+@router.get("/topics")
+async def get_all_topics(optional_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
+    user_id = optional_user["id"] if optional_user else None
+    data = await learning_service.get_dashboard_data(user_id)
+    return {
+        "success": True,
+        "message": "Topics loaded successfully",
+        "data": data.get("topics", []) or data.get("modules", [])
+    }
+
 @router.get("/topic/{topic_id}")
 async def get_topic_details(topic_id: str, forceRegenerate: Optional[str] = None, optional_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
     user_id = optional_user["id"] if optional_user else None
