@@ -113,3 +113,15 @@ Verify the frontend production bundle:
 cd frontend
 npm run build
 ```
+
+---
+
+## 📖 Documentation
+
+- **[Production Deployment & Disaster Recovery Guide](docs/DEPLOYMENT_AND_RECOVERY.md)**: Environment configurations, secrets setup, systemd services, and backup/failover routines.
+- **[Audit & Verification Archive](docs/audit-history/)**:
+  - [Release Readiness Report (Sept 26, 2026)](docs/audit-history/2026-09-26_release_readiness_report.md)
+  - [Release QA & Milestone Sign-Off](docs/audit-history/2026-09-26_release_qa_report.md)
+  - [Authentication & Login Verification Report](docs/audit-history/2026-09-26_login_verification_report.md)
+  - [Notification System Contract Bug Fix Report](docs/audit-history/2026-09-26_notification_bug_fix_report.md)
+
