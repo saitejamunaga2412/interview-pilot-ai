@@ -389,3 +389,167 @@ async def test_concurrent_upsert_safety():
     # Cleanup
     await db["results"].delete_many({"sessionId": sess_id})
 
+
+@pytest.mark.asyncio
+async def test_duplicate_question_text_with_distinct_indices():
+    """Verify identical question text at different indices preserves both results without collision."""
+    db = get_database()
+    user_id = str(ObjectId())
+    sess_id = str(ObjectId())
+    identical_question = "Explain the trade-offs of caching in high-scale architectures."
+
+    await db["interviewsessions"].insert_one({
+        "_id": ObjectId(sess_id),
+        "userId": user_id,
+        "role": "Backend Engineer",
+        "level": "Senior",
+        "questions": [identical_question, identical_question],
+        "totalQuestions": 2,
+        "status": "In Progress",
+        "createdAt": datetime.utcnow()
+    })
+
+    with patch("services_py.interview_service.ai_provider.generate_json", side_effect=RuntimeError("Offline")):
+        # Submit Answer for Question 0 (focusing on memory vs latency)
+        ans0 = "Caching reduces query latency by storing hot data in RAM, but consumes substantial memory."
+        res0 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": sess_id, "question": identical_question, "questionIndex": 0, "answer": ans0}
+        )
+
+        # Submit Answer for Question 1 (focusing on cache invalidation & stale reads)
+        ans1 = "The main challenge of caching is cache invalidation and handling eventual consistency under heavy write loads."
+        res1 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": sess_id, "question": identical_question, "questionIndex": 1, "answer": ans1}
+        )
+
+        # Verify 2 distinct documents exist in results
+        all_results = await db["results"].find({"sessionId": sess_id, "userId": user_id}).to_list(10)
+        assert len(all_results) == 2, f"Expected 2 separate results for duplicate question text, found {len(all_results)}"
+
+        # Verify get_session_details properly aligns results by questionIndex
+        details = await interview_service.get_session_details(user_id, sess_id)
+        session_questions = details["questions"]
+        assert len(session_questions) == 2
+        assert session_questions[0]["answer"] == ans0
+        assert session_questions[1]["answer"] == ans1
+        assert session_questions[0]["questionIndex"] == 0
+        assert session_questions[1]["questionIndex"] == 1
+
+        # Verify session completed after answering both questions
+        sess_doc = await db["interviewsessions"].find_one({"_id": ObjectId(sess_id)})
+        assert sess_doc["status"] == "Completed"
+
+    # Cleanup
+    await db["interviewsessions"].delete_one({"_id": ObjectId(sess_id)})
+    await db["results"].delete_many({"sessionId": sess_id})
+
+
+@pytest.mark.asyncio
+async def test_results_duplicate_checker_and_safe_index():
+    """Verify check_results_duplicates correctly identifies duplicates without crashing ensure_indexes."""
+    from core.database import check_results_duplicates, ensure_indexes
+    db = get_database()
+    test_session = str(ObjectId())
+
+    # Insert two conflicting documents with same (sessionId, questionIndex)
+    doc_a = {
+        "sessionId": test_session,
+        "questionIndex": 99,
+        "userId": str(ObjectId()),
+        "question": "What is indexing?",
+        "score": 50,
+        "createdAt": datetime.utcnow()
+    }
+    doc_b = {
+        "sessionId": test_session,
+        "questionIndex": 99,
+        "userId": str(ObjectId()),
+        "question": "What is indexing? duplicate",
+        "score": 60,
+        "createdAt": datetime.utcnow()
+    }
+
+    insert_a = await db["results"].insert_one(doc_a)
+    insert_b = await db["results"].insert_one(doc_b)
+
+    # Duplicate checker must find this conflict
+    duplicates = await check_results_duplicates(db)
+    found_conflicts = [d for d in duplicates if d["_id"].get("sessionId") == test_session and d["_id"].get("questionIndex") == 99]
+    assert len(found_conflicts) == 1
+    assert found_conflicts[0]["count"] == 2
+    assert insert_a.inserted_id in found_conflicts[0]["docIds"]
+    assert insert_b.inserted_id in found_conflicts[0]["docIds"]
+
+    # ensure_indexes must run gracefully without crashing when conflicts exist
+    await ensure_indexes()
+
+    # Cleanup
+    await db["results"].delete_many({"sessionId": test_session})
+
+
+@pytest.mark.asyncio
+async def test_retry_transition_from_heuristic_to_verified_ai():
+    """Verify that an initial failed AI call falls back to heuristic and a subsequent retry transitions to verified AI."""
+    db = get_database()
+    user_id = str(ObjectId())
+    sess_id = str(ObjectId())
+    q_text = "How do you mitigate cascading failures in distributed systems?"
+
+    # Initial attempt: Gemini offline
+    with patch("services_py.interview_service.ai_provider.generate_json", side_effect=RuntimeError("503 Service Unavailable")):
+        res_initial = await interview_service.evaluate_answer(
+            user_id,
+            {
+                "sessionId": sess_id,
+                "question": q_text,
+                "questionIndex": 0,
+                "answer": "We use circuit breakers, exponential backoff with jitter, and bulkhead isolation to prevent cascading failures."
+            }
+        )
+        assert res_initial["isVerifiedAiEvaluation"] is False
+        assert res_initial["evaluationStatus"] == "Heuristic Fallback"
+        assert res_initial["retryAllowed"] is True
+
+        # Check in DB
+        db_doc = await db["results"].find_one({"sessionId": sess_id, "questionIndex": 0})
+        assert db_doc["isVerifiedAiEvaluation"] is False
+        assert db_doc["evaluationStatus"] == "Heuristic Fallback"
+
+    # Retry attempt: Gemini comes back online
+    ai_response_payload = {
+        "success": True,
+        "data": {
+            "score": 95,
+            "feedback": "Outstanding answer covering circuit breakers, backoff, and bulkheads accurately.",
+            "strengths": ["Clear fault tolerance patterns", "Proactive mitigation"],
+            "weaknesses": [],
+            "correctAnswer": "Circuit breakers and bulkheads effectively isolate failures.",
+            "topicCategory": "Distributed Systems"
+        }
+    }
+    with patch("services_py.interview_service.ai_provider.generate_json", return_value=ai_response_payload):
+        res_retry = await interview_service.evaluate_answer(
+            user_id,
+            {
+                "sessionId": sess_id,
+                "question": q_text,
+                "questionIndex": 0,
+                "answer": "We use circuit breakers, exponential backoff with jitter, and bulkhead isolation to prevent cascading failures across microservices."
+            }
+        )
+        assert res_retry["isVerifiedAiEvaluation"] is True
+        assert res_retry["evaluationStatus"] == "Verified"
+        assert res_retry["score"] == 95
+
+        # Check in DB: in-place update without creating second document
+        all_docs = await db["results"].find({"sessionId": sess_id, "questionIndex": 0}).to_list(10)
+        assert len(all_docs) == 1
+        assert all_docs[0]["isVerifiedAiEvaluation"] is True
+        assert all_docs[0]["score"] == 95
+
+    # Cleanup
+    await db["results"].delete_many({"sessionId": sess_id})
+
+

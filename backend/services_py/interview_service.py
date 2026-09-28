@@ -115,16 +115,20 @@ Output ONLY a JSON object:
         role = payload.get("role", "Software Engineer")
         level = payload.get("level", "Junior")
         question_index = payload.get("questionIndex")
+        doc_question = question
 
-        if question_index is None and session_id:
+        if session_id:
             try:
                 sess = await db["interviewsessions"].find_one({"_id": to_object_id(session_id), "userId": user_id})
                 if sess and "questions" in sess:
                     clean_questions = [str(q).strip() for q in sess["questions"]]
-                    if question.strip() in clean_questions:
+                    if question_index is None and question.strip() in clean_questions:
                         question_index = clean_questions.index(question.strip())
+                    if question_index is not None and clean_questions.count(question.strip()) > 1:
+                        doc_question = f"{question.strip()} (Part {question_index + 1})"
             except Exception:
-                question_index = 0
+                if question_index is None:
+                    question_index = 0
 
         if not answer:
             empty_result = {
@@ -355,7 +359,7 @@ Return ONLY valid JSON matching:
             "userId": user_id,
             "sessionId": session_id,
             "questionIndex": question_index if question_index is not None else 0,
-            "question": question,
+            "question": doc_question,
             "answer": answer,
             "score": score,
             "isVerifiedAiEvaluation": is_verified_ai,
@@ -369,19 +373,46 @@ Return ONLY valid JSON matching:
             "updatedAt": datetime.utcnow()
         }
 
-        # Safe Concurrent Upsert logic
-        await db["results"].update_one(
-            {
+        # Intended unique identity:
+        # For session questions: (userId, sessionId, questionIndex).
+        # This prevents duplicate question text within the same session from overwriting another question.
+        if session_id and question_index is not None:
+            upsert_filter = {
+                "userId": user_id,
+                "sessionId": session_id,
+                "questionIndex": question_index
+            }
+        elif session_id:
+            upsert_filter = {
                 "userId": user_id,
                 "sessionId": session_id,
                 "question": question
-            },
-            {
-                "$set": res_doc,
-                "$setOnInsert": {"createdAt": datetime.utcnow()}
-            },
-            upsert=True
-        )
+            }
+        else:
+            upsert_filter = {
+                "userId": user_id,
+                "sessionId": None,
+                "question": question
+            }
+
+        try:
+            await db["results"].update_one(
+                upsert_filter,
+                {
+                    "$set": res_doc,
+                    "$setOnInsert": {"createdAt": datetime.utcnow()}
+                },
+                upsert=True
+            )
+        except Exception as exc:
+            # Handle potential duplicate key race condition on concurrent inserts
+            if "duplicate key" in str(exc).lower() or "e11000" in str(exc).lower():
+                await db["results"].update_one(
+                    upsert_filter,
+                    {"$set": res_doc}
+                )
+            else:
+                raise
 
         if score < 60:
             await db["mistakes"].update_one(
@@ -449,12 +480,13 @@ Return ONLY valid JSON matching:
 
         for idx, q_text in enumerate(session_questions):
             q_clean = q_text.strip()
-            if q_clean in result_by_q:
+            # Prioritize exact questionIndex match, which is the stable unique identifier
+            if idx in result_by_idx:
+                ordered_results.append(result_by_idx[idx])
+            elif q_clean in result_by_q:
                 r = result_by_q[q_clean]
                 r["questionIndex"] = idx
                 ordered_results.append(r)
-            elif idx in result_by_idx:
-                ordered_results.append(result_by_idx[idx])
 
         # Include any remaining results that didn't match directly
         matched_ids = {str(r.get("_id")) for r in ordered_results}

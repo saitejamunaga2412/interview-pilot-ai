@@ -72,6 +72,27 @@ def to_object_id(id_str: Union[str, ObjectId]) -> ObjectId:
     except Exception:
         return None
 
+async def check_results_duplicates(db) -> List[Dict[str, Any]]:
+    """
+    Detects existing duplicate result records on (sessionId, questionIndex) without deleting data.
+    Returns a list of duplicate groups containing conflict details and document IDs.
+    """
+    try:
+        pipeline = [
+            {"$match": {"sessionId": {"$ne": None}, "questionIndex": {"$ne": None}}},
+            {"$group": {
+                "_id": {"sessionId": "$sessionId", "questionIndex": "$questionIndex"},
+                "count": {"$sum": 1},
+                "docIds": {"$push": "$_id"}
+            }},
+            {"$match": {"count": {"$gt": 1}}}
+        ]
+        cursor = db["results"].aggregate(pipeline)
+        return await cursor.to_list(100)
+    except Exception as ex:
+        logger.warning(f"[MongoDB] Could not check duplicate results: {ex}")
+        return []
+
 async def ensure_indexes():
     """Ensure essential indexes exist for user scoping and query performance."""
     db = get_database()
@@ -81,10 +102,23 @@ async def ensure_indexes():
         await db["results"].create_index("userId")
         await db["results"].create_index("sessionId")
         await db["results"].create_index([("userId", 1), ("sessionId", 1), ("question", 1)])
-        await db["results"].create_index([("sessionId", 1), ("questionIndex", 1)], sparse=True)
+
+        # Safe uniqueness validation for results (sessionId, questionIndex)
+        duplicates = await check_results_duplicates(db)
+        if duplicates:
+            logger.warning(
+                f"[MongoDB] Detected {len(duplicates)} conflicting duplicate groups in 'results' on (sessionId, questionIndex). "
+                f"Preserving existing documents without deletion. Maintaining non-unique index until manual reconciliation."
+            )
+            await db["results"].create_index([("sessionId", 1), ("questionIndex", 1)], sparse=True)
+        else:
+            try:
+                await db["results"].create_index([("sessionId", 1), ("questionIndex", 1)], unique=True, sparse=True)
+            except Exception as u_ex:
+                logger.warning(f"[MongoDB] Unique index notice on results: {u_ex}. Reverting to sparse non-unique index.")
+                await db["results"].create_index([("sessionId", 1), ("questionIndex", 1)], sparse=True)
+
         await db["mistakes"].create_index("userId")
-
-
         await db["notifications"].create_index("userId")
         await db["notifications"].create_index([("userId", 1), ("dedupeKey", 1)])
         await db["notification_deliveries"].create_index("dedupeKey", unique=True)
