@@ -448,42 +448,44 @@ async def test_duplicate_question_text_with_distinct_indices():
 
 @pytest.mark.asyncio
 async def test_results_duplicate_checker_and_safe_index():
-    """Verify check_results_duplicates correctly identifies duplicates without crashing ensure_indexes."""
+    """Verify unique constraint on (userId, sessionId, questionIndex) rejects duplicates at the database level."""
     from core.database import check_results_duplicates, ensure_indexes
+    import pymongo.errors
     db = get_database()
     test_session = str(ObjectId())
+    test_user = str(ObjectId())
 
-    # Insert two conflicting documents with same (sessionId, questionIndex)
+    # Document 1 inserts cleanly
     doc_a = {
         "sessionId": test_session,
         "questionIndex": 99,
-        "userId": str(ObjectId()),
+        "userId": test_user,
         "question": "What is indexing?",
         "score": 50,
         "createdAt": datetime.utcnow()
     }
+    insert_a = await db["results"].insert_one(doc_a)
+    assert insert_a.inserted_id is not None
+
+    # Conflicting document with identical (userId, sessionId, questionIndex) must be rejected with DuplicateKeyError
     doc_b = {
         "sessionId": test_session,
         "questionIndex": 99,
-        "userId": str(ObjectId()),
+        "userId": test_user,
         "question": "What is indexing? duplicate",
         "score": 60,
         "createdAt": datetime.utcnow()
     }
+    with pytest.raises(pymongo.errors.DuplicateKeyError):
+        await db["results"].insert_one(doc_b)
 
-    insert_a = await db["results"].insert_one(doc_a)
-    insert_b = await db["results"].insert_one(doc_b)
-
-    # Duplicate checker must find this conflict
-    duplicates = await check_results_duplicates(db)
-    found_conflicts = [d for d in duplicates if d["_id"].get("sessionId") == test_session and d["_id"].get("questionIndex") == 99]
-    assert len(found_conflicts) == 1
-    assert found_conflicts[0]["count"] == 2
-    assert insert_a.inserted_id in found_conflicts[0]["docIds"]
-    assert insert_b.inserted_id in found_conflicts[0]["docIds"]
-
-    # ensure_indexes must run gracefully without crashing when conflicts exist
+    # ensure_indexes must run gracefully and idempotently
     await ensure_indexes()
+
+    # Verify duplicate checker confirms zero duplicate conflicts
+    duplicates = await check_results_duplicates(db)
+    user_conflicts = [d for d in duplicates if d["_id"].get("userId") == test_user]
+    assert len(user_conflicts) == 0
 
     # Cleanup
     await db["results"].delete_many({"sessionId": test_session})
