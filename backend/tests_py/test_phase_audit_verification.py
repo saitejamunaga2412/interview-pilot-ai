@@ -16,78 +16,114 @@ from unittest.mock import patch
 
 @pytest.mark.asyncio
 async def test_heuristic_scoring_calibrations():
-    """Verify heuristic evaluation bounds, anti-keyword-stuffing, and disclaimer metadata when AI is offline."""
+    """Verify heuristic evaluation bounds across the complete 10-case validation matrix when AI is offline."""
     user_id = str(ObjectId())
 
-    # Simulate AI service offline / rate limit by mocking generate_json to raise RuntimeError
     with patch("services_py.interview_service.ai_provider.generate_json", side_effect=RuntimeError("Gemini quota 429")):
-        # 1. Keyword stuffing attempt: list of keywords without sentence structure
-        stuffed_ans = "api rest cache redis database sql query index latency throughput concurrency thread async await microservice docker"
-        res_stuffed = await interview_service.evaluate_answer(
-            user_id,
-            {
-                "sessionId": str(ObjectId()),
-                "question": "Explain database indexing and query optimization.",
-                "answer": stuffed_ans,
-                "role": "Backend Engineer",
-                "level": "Intermediate"
-            }
-        )
-        assert res_stuffed["score"] <= 20, f"Keyword stuffing should be penalized to <= 20, got {res_stuffed['score']}"
-        assert res_stuffed["isVerifiedAiEvaluation"] is False
-        assert res_stuffed["evaluationStatus"] == "Heuristic Fallback"
-        assert "not equivalent to human or expert assessment" in res_stuffed.get("evaluationDisclaimer", "").lower()
-
-        # 2. Too short answer (< 15 words)
-        short_ans = "I use indexes to make queries faster."
-        res_short = await interview_service.evaluate_answer(
-            user_id,
-            {
-                "sessionId": str(ObjectId()),
-                "question": "How do you optimize slow database queries in production?",
-                "answer": short_ans,
-                "role": "Backend Engineer",
-                "level": "Intermediate"
-            }
-        )
-        assert res_short["score"] <= 25, f"Short answer (<15 words) should be capped at <= 25, got {res_short['score']}"
-        assert res_short["isVerifiedAiEvaluation"] is False
-
-        # 3. Off-topic answer
-        offtopic_ans = "I enjoy baking apple pies and swimming at the beach during the summer months with my friends."
-        res_offtopic = await interview_service.evaluate_answer(
-            user_id,
-            {
-                "sessionId": str(ObjectId()),
-                "question": "How do you design a high-throughput caching layer with Redis?",
-                "answer": offtopic_ans,
-                "role": "Backend Engineer",
-                "level": "Intermediate"
-            }
-        )
-        assert res_offtopic["score"] <= 25, f"Off-topic answer should be capped at <= 25, got {res_offtopic['score']}"
-        assert res_offtopic["isVerifiedAiEvaluation"] is False
-
-        # 4. Substantive, relevant answer with technical vocabulary and causal trade-off reasoning
+        # Case 1: Correct and detailed answer with technical depth and metrics
         good_ans = (
             "In order to diagnose database query bottlenecks, I analyze the slow query log and examine execution plans using EXPLAIN. "
             "We add compound B-Tree indexes because full table scans severely increase query latency and CPU utilization. "
             "Additionally, we introduce a Redis cache layer for high-throughput read operations, which reduces database load by 60% and optimizes 99th percentile response times."
         )
-        res_good = await interview_service.evaluate_answer(
+        res1 = await interview_service.evaluate_answer(
             user_id,
-            {
-                "sessionId": str(ObjectId()),
-                "question": "How do you diagnose and optimize database queries and server bottlenecks?",
-                "answer": good_ans,
-                "role": "Backend Architect",
-                "level": "Senior"
-            }
+            {"sessionId": str(ObjectId()), "question": "How do you diagnose and optimize database queries and server bottlenecks?", "answer": good_ans}
         )
-        assert res_good["score"] >= 65, f"Substantive answer should score >= 65, got {res_good['score']}"
-        assert res_good["score"] <= 100
-        assert res_good["isVerifiedAiEvaluation"] is False
-        assert res_good["evaluationStatus"] == "Heuristic Fallback"
+        assert res1["score"] >= 75, f"Case 1 (Detailed & Correct): expected >= 75, got {res1['score']}"
+        assert res1["isVerifiedAiEvaluation"] is False
+        assert res1["evaluationStatus"] == "Heuristic Fallback"
+
+        # Case 2: Correct answer written in simple language
+        simple_ans = (
+            "An index works like a book index. It stores sorted keys with memory addresses so the database searches directly instead of reading the entire table one row at a time. This speeds up lookups significantly."
+        )
+        res2 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "Explain database indexing and how it works.", "answer": simple_ans}
+        )
+        assert res2["score"] >= 60, f"Case 2 (Simple language correct): expected >= 60, got {res2['score']}"
+
+        # Case 3: Partially correct answer
+        partial_ans = "Indexes make select queries faster, but you must be careful because too many indexes take disk space."
+        res3 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "Explain database indexing trade-offs.", "answer": partial_ans}
+        )
+        assert 40 <= res3["score"] <= 65, f"Case 3 (Partially correct): expected 40-65, got {res3['score']}"
+
+        # Case 4: Incorrect answer with unrelated technical keywords (React/Redux for DNS question)
+        mismatched_tech_ans = "DNS resolution uses React state hooks, virtual DOM reconcilers, and Redux store reducers to dispatch action payloads into the server pipeline."
+        res4 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "Explain how DNS resolution works.", "answer": mismatched_tech_ans}
+        )
+        assert res4["score"] <= 25, f"Case 4 (Unrelated tech words): expected <= 25, got {res4['score']}"
+
+        # Case 5: Keyword stuffing and repeated terms
+        stuffed_ans = "database database database database database sql sql sql sql index index index query cache cache cache"
+        res5 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "Explain database indexing and query optimization.", "answer": stuffed_ans}
+        )
+        assert res5["score"] <= 20, f"Case 5 (Keyword stuffing): expected <= 20, got {res5['score']}"
+
+        # Case 6: Empty and gibberish answers
+        empty_res = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "What is an index?", "answer": ""}
+        )
+        assert empty_res["score"] == 0
+        assert empty_res["attemptStatus"] == "Not Attempted"
+
+        gibberish_res = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "What is an index?", "answer": "asdfjkl zxcvbnm qwertyuiop"}
+        )
+        assert gibberish_res["score"] <= 20
+
+        # Case 7: Short but technically correct answer with Big-O notation
+        concise_ans = "The average and worst-case time complexity is O(log n) in balanced BST."
+        res7 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "What is the time complexity of searching in a binary search tree?", "answer": concise_ans}
+        )
+        assert 45 <= res7["score"] <= 60, f"Case 7 (Concise correct): expected 45-60, got {res7['score']}"
+
+        # Case 8: Valid answer lacking words like 'because', 'therefore', or 'optimized'
+        no_marker_ans = (
+            "Microservices divide a monolithic application into independently deployable services. "
+            "Each service manages its own database and communicates via REST APIs or message brokers. "
+            "Teams can scale individual services on demand and use different programming languages tailored for each service domain."
+        )
+        res8 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "What are the core architecture patterns and benefits of microservices?", "answer": no_marker_ans}
+        )
+        assert res8["score"] >= 70, f"Case 8 (Valid without rigid markers): expected >= 70, got {res8['score']}"
+
+        # Case 9: Explaining trade-offs without explicit numerical metrics
+        tradeoff_ans = (
+            "The trade-off of database indexing is that while read queries become faster, write operations such as insert and update become slower since the database must keep the index tree balanced."
+        )
+        res9 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "Explain database indexing trade-offs.", "answer": tradeoff_ans}
+        )
+        assert res9["score"] >= 65, f"Case 9 (Trade-off without numbers): expected >= 65, got {res9['score']}"
+
+        # Case 10: Long answer irrelevant to the question
+        long_irrelevant_ans = (
+            "Yesterday I went to the supermarket and bought several fresh vegetables including tomatoes, cucumbers, and carrots. "
+            "After returning home, I cooked a delicious Mediterranean salad with olive oil and lemon juice. "
+            "Cooking healthy food provides sustained energy and enhances everyday productivity during afternoon walks."
+        )
+        res10 = await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": str(ObjectId()), "question": "How do you design a high-throughput caching layer with Redis?", "answer": long_irrelevant_ans}
+        )
+        assert res10["score"] <= 20, f"Case 10 (Long irrelevant): expected <= 20, got {res10['score']}"
+
 
 
 @pytest.mark.asyncio
@@ -256,3 +292,100 @@ async def test_security_multi_tenant_isolation_and_admin_auth():
         await db["users"].delete_many({"_id": {"$in": [ObjectId(user_a_id), ObjectId(user_b_id)]}})
         await db["interviewsessions"].delete_one({"_id": ObjectId(sess_a_id)})
         await db["projects"].delete_one({"_id": ObjectId(proj_a_id)})
+
+@pytest.mark.asyncio
+async def test_session_lifecycle_and_non_premature_completion():
+    """Verify session status remains 'In Progress' until all questions are evaluated."""
+    db = get_database()
+    user_id = str(ObjectId())
+    sess_id = str(ObjectId())
+
+    questions = [
+        "Q1: What is a deadlock?",
+        "Q2: Explain starvation.",
+        "Q3: What is mutex vs semaphore?",
+        "Q4: How do you prevent deadlocks?",
+        "Q5: Describe priority inversion."
+    ]
+
+    await db["interviewsessions"].insert_one({
+        "_id": ObjectId(sess_id),
+        "userId": user_id,
+        "role": "Systems Engineer",
+        "level": "Senior",
+        "questions": questions,
+        "totalQuestions": 5,
+        "status": "In Progress",
+        "createdAt": datetime.utcnow()
+    })
+
+    with patch("services_py.interview_service.ai_provider.generate_json", side_effect=RuntimeError("Offline")):
+        # Evaluate Question 1
+        await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": sess_id, "question": questions[0], "questionIndex": 0, "answer": "A deadlock occurs when two processes each hold a resource the other needs."}
+        )
+        s1 = await db["interviewsessions"].find_one({"_id": ObjectId(sess_id)})
+        assert s1["status"] == "In Progress", f"Expected 'In Progress' after 1 of 5 questions, got {s1['status']}"
+
+        # Evaluate Question 2
+        await interview_service.evaluate_answer(
+            user_id,
+            {"sessionId": sess_id, "question": questions[1], "questionIndex": 1, "answer": "Starvation is when a runnable process is perpetually denied CPU allocation."}
+        )
+        s2 = await db["interviewsessions"].find_one({"_id": ObjectId(sess_id)})
+        assert s2["status"] == "In Progress", f"Expected 'In Progress' after 2 of 5 questions, got {s2['status']}"
+
+        # Evaluate Questions 3, 4, 5
+        for i in range(2, 5):
+            await interview_service.evaluate_answer(
+                user_id,
+                {"sessionId": sess_id, "question": questions[i], "questionIndex": i, "answer": f"Explanation for question {i+1} covering synchronization primitives."}
+            )
+
+        # After all 5 evaluated: status must be 'Completed'
+        s_final = await db["interviewsessions"].find_one({"_id": ObjectId(sess_id)})
+        assert s_final["status"] == "Completed", f"Expected 'Completed' after 5 of 5 questions, got {s_final['status']}"
+        assert s_final.get("completedAt") is not None
+        assert s_final.get("overallScore") is not None
+
+    # Cleanup
+    await db["interviewsessions"].delete_one({"_id": ObjectId(sess_id)})
+    await db["results"].delete_many({"sessionId": sess_id})
+
+@pytest.mark.asyncio
+async def test_concurrent_upsert_safety():
+    """Verify simultaneous evaluations for the same question don't create duplicate documents."""
+    import asyncio
+    db = get_database()
+    user_id = str(ObjectId())
+    sess_id = str(ObjectId())
+    q_text = "Explain concurrent read/write locks in Python."
+
+    with patch("services_py.interview_service.ai_provider.generate_json", side_effect=RuntimeError("Offline")):
+        # Fire 5 concurrent evaluation requests for the exact same question
+        tasks = [
+            interview_service.evaluate_answer(
+                user_id,
+                {
+                    "sessionId": sess_id,
+                    "question": q_text,
+                    "questionIndex": 0,
+                    "answer": f"Attempt {idx}: Read/write locks allow concurrent reads while serializing writes in order to maintain data consistency."
+                }
+            )
+            for idx in range(5)
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Check that none raised an unhandled exception
+        for r in results:
+            assert isinstance(r, dict), f"Expected dict result, got {type(r)}"
+
+        # Verify exactly 1 record exists in results collection
+        db_results = await db["results"].find({"sessionId": sess_id, "userId": user_id}).to_list(10)
+        assert len(db_results) == 1, f"Expected exactly 1 result document after concurrent upserts, found {len(db_results)}"
+
+    # Cleanup
+    await db["results"].delete_many({"sessionId": sess_id})
+

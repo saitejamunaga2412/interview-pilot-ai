@@ -388,7 +388,9 @@ export function useInterviewData() {
   const startNewInterview = () => {
     if (sessionId) {
       localStorage.removeItem(`interview:draft:${sessionId}`);
+      localStorage.removeItem(`interview:completed:${sessionId}`);
     }
+
     setQuestions([]);
     setAnswers({});
     setResults({});

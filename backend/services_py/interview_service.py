@@ -180,30 +180,93 @@ Return ONLY valid JSON matching:
             words = ans_lower.split()
             word_count = len(words)
             
-            # Extract meaningful question terms (>3 chars, non-stopwords)
-            stopwords = {"what", "how", "why", "when", "where", "which", "with", "from", "that", "this", "your", "have", "been", "will", "would", "could", "should", "explain", "describe", "discuss"}
-            q_terms = [w.strip("?,.:;\"'") for w in q_lower.split() if len(w) > 3 and w.strip("?,.:;\"'") not in stopwords]
-            matched_q_terms = [term for term in q_terms if term in ans_lower]
-            
-            # Key technical signals
-            tech_vocabulary = {
-                "api", "rest", "cache", "redis", "database", "sql", "query", "index",
-                "latency", "throughput", "concurrency", "thread", "async", "await", "promise",
-                "component", "state", "props", "hook", "dom", "algorithm", "complexity",
-                "memory", "cpu", "server", "microservice", "docker", "pipeline", "test",
-                "deploy", "git", "schema", "architecture", "security", "token", "jwt",
-                "scale", "scalability", "load", "optimization", "optimize", "distributed",
-                "performance", "metric", "monitoring", "framework", "lifecycle", "hash"
+            # Extract meaningful question terms (including 3-letter technical acronyms like DNS, SQL, API, CPU, RAM)
+            stopwords = {
+                "what", "how", "why", "when", "where", "which", "with", "from", "that", "this",
+                "your", "have", "been", "will", "would", "could", "should", "explain", "describe",
+                "discuss", "the", "and", "for", "are", "you", "can", "use", "not", "any", "all",
+                "out", "new", "its", "has", "had", "did", "was", "who", "whom", "into", "their"
             }
-            matched_tech = [t for t in tech_vocabulary if t in ans_lower]
+            q_raw_terms = [
+                w.strip("?,.:;\"'()-_")
+                for w in q_lower.split()
+                if (len(w.strip("?,.:;\"'()-_")) >= 3) and (w.strip("?,.:;\"'()-_") not in stopwords)
+            ]
+            
+            def stem_word(w: str) -> str:
+                clean = w.strip("?,.:;\"'()-_").lower()
+                for suf in ["ing", "tion", "tions", "ies", "es", "ed", "s"]:
+                    if len(clean) > len(suf) + 3 and clean.endswith(suf):
+                        return clean[:-len(suf)]
+                return clean
+
+            q_terms = [stem_word(t) for t in q_raw_terms if len(stem_word(t)) >= 3]
+            ans_stems = [stem_word(w) for w in words]
+
+            matched_q_terms = [
+                term for term in q_terms
+                if term in ans_lower or any(term in s or s in term for s in ans_stems if len(s) >= 4)
+            ]
+
+            
+            # Domain-specific technical signals
+            tech_vocabulary = {
+                "api", "rest", "graphql", "grpc", "cache", "redis", "memcached", "database", "sql", "nosql",
+                "query", "index", "b-tree", "hash", "latency", "throughput", "concurrency", "thread",
+                "async", "await", "promise", "component", "state", "props", "hook", "dom", "algorithm",
+                "complexity", "memory", "cpu", "server", "microservice", "docker", "kubernetes", "pipeline",
+                "test", "deploy", "git", "schema", "architecture", "security", "token", "jwt", "scale",
+                "scalability", "load", "optimization", "optimize", "distributed", "performance", "metric",
+                "monitoring", "framework", "lifecycle", "queue", "kafka", "rabbitmq", "sharding", "replica",
+                "replication", "transaction", "acid", "mutex", "lock", "deadlock", "dns", "tcp", "http",
+                "tree", "graph", "heap", "stack", "linkedlist", "array", "binary", "sorting", "search",
+                "linear", "logarithmic", "constant", "star", "loadbalancer", "cdn", "gateway", "resolver", "nameserver"
+            }
+            ans_words_clean = set(re.findall(r"[a-z0-9]+(?:-[a-z0-9]+)?", ans_lower))
+            matched_tech = [t for t in tech_vocabulary if (t in ans_words_clean if len(t) <= 4 else t in ans_lower)]
+
+            # Domain clusters for domain-mismatch protection
+            domain_clusters = {
+                "networking": {"dns", "ip", "tcp", "udp", "http", "https", "ssl", "tls", "resolver", "lookup", "nameserver", "packet", "socket", "network", "gateway", "cdn", "proxy", "loadbalancer"},
+                "database": {"database", "sql", "nosql", "query", "index", "b-tree", "table", "schema", "transaction", "acid", "shard", "sharding", "replica", "replication", "deadlock", "redis", "cache"},
+                "frontend": {"react", "hook", "props", "state", "dom", "component", "redux", "css", "html", "render", "jsx", "vdom", "reconcil"},
+                "dsa": {"tree", "graph", "binary", "heap", "stack", "linkedlist", "array", "sorting", "search", "complexity", "algorithm", "travers", "recursion"}
+            }
+            q_words_clean = set(re.findall(r"[a-z0-9]+(?:-[a-z0-9]+)?", q_lower))
+
+            q_cluster_names = [
+                d for d, terms in domain_clusters.items()
+                if any(t in q_words_clean or (len(t) > 4 and any(w.startswith(t) for w in q_words_clean)) for t in terms)
+            ]
+            has_domain_mismatch = False
+            if q_cluster_names:
+                ans_matches_q_cluster = any(
+                    any((t in ans_words_clean or (len(t) > 4 and any(w.startswith(t) for w in ans_words_clean))) and t not in q_words_clean for t in domain_clusters[c])
+                    for c in q_cluster_names
+                )
+                if not ans_matches_q_cluster:
+                    other_clusters = [c for c in domain_clusters if c not in q_cluster_names]
+                    other_matches = sum(
+                        1 for c in other_clusters
+                        if sum(1 for t in domain_clusters[c] if t in ans_words_clean or (len(t) > 4 and any(w.startswith(t) for w in ans_words_clean))) >= 2
+                    )
+                    if other_matches > 0:
+                        has_domain_mismatch = True
             
             # Structural/depth indicators
-            has_cause_effect = any(phr in ans_lower for phr in ["because", "to decrease", "in order to", "resulted in", "used", "by", "implemented", "trade-off", "tradeoff", "reduces", "improves", "optimizes"])
-            has_metrics = bool(re.search(r"\b\d+([%xX]|ms|s|gb|mb|kb|k)?\b", answer))
+            has_cause_effect = any(
+                phr in ans_lower
+                for phr in [
+                    "because", "since", "as a result", "therefore", "in order to", "so that",
+                    "instead of", "leads to", "resulting in", "trade-off", "tradeoff", "reduces",
+                    "improves", "optimizes", "speeds up", "prevents", "ensures", "allows",
+                    "avoids", "by using", "by storing", "enables", "causes", "meaning that"
+                ]
+            )
+            has_metrics = bool(re.search(r"\b(o\([0-9a-z\s\^\*\+\-\/\(\)]+\)|\d+([%xX]|ms|s|gb|mb|kb|k)?)\b", answer, re.IGNORECASE))
             sentences = [s.strip() for s in re.split(r"[.!?]+", answer) if len(s.strip().split()) >= 3]
 
             # Anti-Keyword-Stuffing & Gibberish Protection:
-            # If the candidate provides a list of technical words without proper sentence structure
             tech_density = (len(matched_tech) / max(1, word_count)) if word_count > 0 else 0
             is_keyword_stuffing = (tech_density > 0.4 and len(sentences) <= 1) or (word_count >= 10 and len(set(words)) / word_count < 0.4)
 
@@ -212,30 +275,45 @@ Return ONLY valid JSON matching:
                 feedback_text = "Answer appears to be isolated keywords or repetitive terms without coherent explanatory sentences. Use full sentences explaining technical decisions and trade-offs."
                 strengths_list = ["Recognized relevant terminology"]
                 weaknesses_list = ["Lacks sentence structure and context", "No problem-solving methodology demonstrated"]
-            elif word_count < 15:
-                # Short answer penalty: cannot exceed 25
-                calculated_score = min(25, 10 + len(matched_tech) * 3)
-                feedback_text = "Answer is too brief to demonstrate engineering competence. Elaborate with architecture details, implementation steps, and concrete examples."
-                strengths_list = ["Brief initial response"]
-                weaknesses_list = ["Insufficient detail and depth", "Missing architectural context"]
-            elif len(matched_q_terms) == 0 and len(matched_tech) == 0:
-                # Off-topic answer: cannot exceed 20
-                calculated_score = 15
-                feedback_text = "Answer does not appear relevant to the question asked. Please address the specific topic and core concepts directly."
+            elif has_domain_mismatch:
+                calculated_score = min(25, 10 + len(matched_tech) * 2)
+                feedback_text = "Answer references technical concepts from an unrelated architectural domain. Please address the specific technology domain of the question directly."
+                strengths_list = ["Demonstrates general technical vocabulary"]
+                weaknesses_list = ["Concepts used belong to an unrelated domain", "Does not answer the core question asked"]
+            elif word_count < 8:
+                calculated_score = min(20, 10 + len(matched_tech) * 2)
+                feedback_text = "Answer is too brief to demonstrate engineering competence. Elaborate with architecture details and implementation steps."
+                strengths_list = ["Brief response"]
+                weaknesses_list = ["Insufficient detail and depth"]
+            elif len(matched_q_terms) == 0:
+                # Off-topic / Irrelevant answer: does not address the question even if it mentions other tech concepts
+                calculated_score = min(20, 10 + len(matched_tech) * 2)
+                feedback_text = f"Answer does not address the core question topic ({', '.join(q_terms[:3]) if q_terms else 'the subject'}). Please answer the specific question directly."
                 strengths_list = ["Attempted response"]
-                weaknesses_list = ["Does not answer the core question", "Lacks relevant technical terminology"]
-            else:
-                # Calibrated scoring based on criteria:
-                # Relevance (0-35), Technical Depth (0-35), Explanation/Metrics (0-30)
-                relevance_score = min(35, len(matched_q_terms) * 12) if q_terms else 20
-                tech_score = min(35, len(matched_tech) * 10)
-                depth_score = (15 if has_cause_effect else 5) + (15 if has_metrics else 5)
-                calculated_score = relevance_score + tech_score + depth_score
-                
-                # Cap score if no causal/trade-off reasoning is provided
-                if not has_cause_effect:
-                    calculated_score = min(65, calculated_score)
+                weaknesses_list = ["Does not answer the core question asked", "Off-topic concepts discussed"]
 
+            elif word_count < 15:
+                # Concise, technically accurate answer
+                if len(matched_q_terms) >= 1 and (len(matched_tech) >= 1 or has_metrics):
+                    calculated_score = min(55, 30 + len(matched_q_terms) * 10 + (15 if has_metrics else 5))
+                    feedback_text = "Concise and technically accurate core answer. Elaborate with architectural reasoning, edge cases, and trade-offs to achieve a higher score."
+                    strengths_list = ["Accurate core concept", "Direct response to question"]
+                    weaknesses_list = ["Provide more detailed architectural reasoning and trade-offs"]
+                else:
+                    calculated_score = min(25, 10 + len(matched_tech) * 3)
+                    feedback_text = "Answer is brief and lacks sufficient technical depth. Provide concrete examples and detailed explanation."
+                    strengths_list = ["Brief initial response"]
+                    weaknesses_list = ["Lacks specific technical depth"]
+            else:
+                # Calibrated substantive scoring based on criteria:
+                # Relevance (0-35), Technical Depth (0-35), Articulation/Explanation/Metrics (0-30)
+                relevance_score = min(35, 12 + len(matched_q_terms) * 10) if (q_terms and matched_q_terms) else 20
+                tech_score = min(35, len(matched_tech) * 7)
+                has_coherent_sentences = len(sentences) >= 2 and word_count >= 25
+                depth_score = (18 if (has_cause_effect or has_coherent_sentences) else 10) + (12 if has_metrics else 6)
+                
+                length_mult = 0.8 if word_count < 25 else 1.0
+                calculated_score = int((relevance_score + tech_score + depth_score) * length_mult)
                 calculated_score = min(90, max(30, calculated_score))
                 feedback_text = "Answer demonstrates technical relevance and foundational understanding. Further detail on edge cases and failure modes would strengthen it."
                 strengths_list = [f"Incorporates relevant engineering concepts ({', '.join(matched_tech[:3]) or 'technical focus'})", "Clear problem context"]
@@ -321,17 +399,26 @@ Return ONLY valid JSON matching:
                 upsert=True
             )
 
-        # Update overall session score if all submitted
+        # Update overall session score only when all expected questions are evaluated
         if session_id:
             user_session = await db["interviewsessions"].find_one({"_id": to_object_id(session_id), "userId": user_id})
             if user_session:
-                all_results = await db["results"].find({"sessionId": session_id, "userId": user_id}).to_list(15)
+                all_results = await db["results"].find({"sessionId": session_id, "userId": user_id}).to_list(20)
                 if all_results:
                     avg_score = round(sum(r.get("score", 0) for r in all_results) / len(all_results))
+                    total_expected = user_session.get("totalQuestions") or len(user_session.get("questions", [])) or 5
+                    is_completed = len(all_results) >= total_expected
+                    update_data = {
+                        "overallScore": avg_score,
+                        "status": "Completed" if is_completed else user_session.get("status", "In Progress")
+                    }
+                    if is_completed and not user_session.get("completedAt"):
+                        update_data["completedAt"] = datetime.utcnow()
                     await db["interviewsessions"].update_one(
                         {"_id": to_object_id(session_id), "userId": user_id},
-                        {"$set": {"overallScore": avg_score, "status": "Completed"}}
+                        {"$set": update_data}
                     )
+
 
         # Emit completion milestone event
         event_bus.emit("interview.completed", {"userId": user_id, "score": score})
