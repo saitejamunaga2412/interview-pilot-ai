@@ -261,9 +261,12 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
     format: "a4"
   });
 
-  const analysis = atsAnalysis?.analysis || atsAnalysis || {};
-  const overallScore = atsAnalysis?.overallScore ?? analysis?.overall_score ?? 0;
-  const role = targetRole || atsAnalysis?.targetRole || analysis?.target_role || "Software Engineer";
+  const analysis = (atsAnalysis && typeof atsAnalysis === "object")
+    ? (atsAnalysis.analysis || atsAnalysis)
+    : {};
+  const overallScore = Math.max(0, Math.min(100, Math.round(Number(atsAnalysis?.overallScore ?? analysis?.overall_score ?? 0))));
+  const rawRole = targetRole || atsAnalysis?.targetRole || analysis?.target_role || "Software Engineer";
+  const role = typeof rawRole === "string" ? rawRole : (rawRole?.title || "Software Engineer");
   const dateStr = new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
   const drawHeader = (isFirstPage = false) => {
@@ -374,9 +377,26 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
     }
   };
 
+  const printWrappedLines = (lines, x = 14, lineHeight = 4.2) => {
+    lines.forEach((line) => {
+      if (cursorY + lineHeight > 265) {
+        doc.addPage();
+        drawHeader(false);
+        cursorY = 24;
+      }
+      doc.text(line, x, cursorY);
+      cursorY += lineHeight;
+    });
+  };
+
   // 1. Detected Keywords
-  const detected = (analysis.detected_keywords || []).slice(0, 25).join(", ") || "No specific target keywords detected.";
-  ensureSpace(22);
+  const rawDetected = Array.isArray(analysis.detected_keywords)
+    ? analysis.detected_keywords
+    : Array.isArray(atsAnalysis.detectedKeywords)
+    ? atsAnalysis.detectedKeywords
+    : [];
+  const detected = rawDetected.slice(0, 150).join(", ") || "No specific target keywords detected.";
+  ensureSpace(14);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
@@ -387,12 +407,17 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
   doc.setFontSize(8);
   doc.setTextColor(51, 65, 85);
   const detectedLines = doc.splitTextToSize(detected, 182);
-  doc.text(detectedLines, 14, cursorY);
-  cursorY += (detectedLines.length * 4.2) + 6;
+  printWrappedLines(detectedLines, 14, 4.2);
+  cursorY += 5;
 
   // 2. Missing Keywords & Skill Gaps
-  const missing = (analysis.missing_keywords || []).slice(0, 20).join(", ") || "None. Comprehensive skill coverage detected.";
-  ensureSpace(22);
+  const rawMissing = Array.isArray(analysis.missing_keywords)
+    ? analysis.missing_keywords
+    : Array.isArray(atsAnalysis.missingKeywords)
+    ? atsAnalysis.missingKeywords
+    : [];
+  const missing = rawMissing.slice(0, 100).join(", ") || "None. Comprehensive skill coverage detected.";
+  ensureSpace(14);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(220, 38, 38);
@@ -403,8 +428,8 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
   doc.setFontSize(8);
   doc.setTextColor(71, 85, 105);
   const missingLines = doc.splitTextToSize(missing, 182);
-  doc.text(missingLines, 14, cursorY);
-  cursorY += (missingLines.length * 4.2) + 7;
+  printWrappedLines(missingLines, 14, 4.2);
+  cursorY += 5;
 
   // 3. Identified Strengths
   const strengths = Array.isArray(analysis.strengths) && analysis.strengths.length > 0
@@ -414,7 +439,7 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
         "Demonstrates solid foundational technical knowledge aligned with target role."
       ];
 
-  ensureSpace(16 + strengths.length * 6);
+  ensureSpace(14);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(16, 185, 129); // Emerald
@@ -424,11 +449,10 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(51, 65, 85);
-  strengths.slice(0, 4).forEach((str) => {
-    ensureSpace(8);
+  strengths.slice(0, 10).forEach((str) => {
+    ensureSpace(6);
     const bulletLines = doc.splitTextToSize(`• ${str}`, 180);
-    doc.text(bulletLines, 16, cursorY);
-    cursorY += (bulletLines.length * 4.2);
+    printWrappedLines(bulletLines, 16, 4.2);
   });
   cursorY += 4;
 
@@ -442,7 +466,7 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
         "Quantify project outcomes with numerical metrics (e.g., latency, throughput, users served)."
       ];
 
-  ensureSpace(16 + recommendations.length * 6);
+  ensureSpace(14);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(79, 70, 229); // Indigo
@@ -452,12 +476,11 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(51, 65, 85);
-  recommendations.slice(0, 5).forEach((rec) => {
-    ensureSpace(8);
+  recommendations.slice(0, 15).forEach((rec) => {
+    ensureSpace(6);
     const text = typeof rec === "string" ? rec : rec.text || rec.issue || rec.recommendation || JSON.stringify(rec);
     const recLines = doc.splitTextToSize(`• ${text}`, 180);
-    doc.text(recLines, 16, cursorY);
-    cursorY += (recLines.length * 4.2);
+    printWrappedLines(recLines, 16, 4.2);
   });
 
   // Footer on all pages
@@ -474,7 +497,7 @@ export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engi
     doc.text("Confidential Report", 196, 287, { align: "right" });
   }
 
-  const safeRole = role.replace(/[^a-zA-Z0-9]/g, "_");
+  const safeRole = String(role).replace(/[^a-zA-Z0-9]/g, "_") || "Software_Engineer";
   doc.save(`ATS_Report_${safeRole}.pdf`);
   return true;
 }

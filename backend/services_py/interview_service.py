@@ -108,22 +108,40 @@ Output ONLY a JSON object:
 
     @classmethod
     async def evaluate_answer(cls, user_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        db = get_database()
         session_id = payload.get("sessionId")
         question = payload.get("question", "")
         answer = (payload.get("answer") or "").strip()
         role = payload.get("role", "Software Engineer")
         level = payload.get("level", "Junior")
+        question_index = payload.get("questionIndex")
+
+        if question_index is None and session_id:
+            try:
+                sess = await db["interviewsessions"].find_one({"_id": to_object_id(session_id), "userId": user_id})
+                if sess and "questions" in sess:
+                    clean_questions = [str(q).strip() for q in sess["questions"]]
+                    if question.strip() in clean_questions:
+                        question_index = clean_questions.index(question.strip())
+            except Exception:
+                question_index = 0
 
         if not answer:
-            return {
+            empty_result = {
                 "sessionId": session_id,
+                "questionIndex": question_index if question_index is not None else 0,
                 "score": 0,
                 "attemptStatus": "Not Attempted",
                 "feedback": "No answer provided.",
                 "strengths": [],
                 "weaknesses": ["Question was skipped."],
-                "correctAnswer": "A comprehensive answer addressing core concepts and real-world trade-offs."
+                "correctAnswer": "A comprehensive answer addressing core concepts and real-world trade-offs.",
+                "isVerifiedAiEvaluation": False,
+                "evaluationStatus": "Not Attempted",
+                "evaluationDisclaimer": "Question was skipped or empty.",
+                "retryAllowed": True
             }
+            return empty_result
 
         eval_prompt = f"""You are an expert interviewer evaluating a candidate answer for InterviewPilot AI.
 Role: {role}
@@ -159,6 +177,8 @@ Return ONLY valid JSON matching:
             # Substantive heuristic evaluation: evaluate question relevance, technical vocabulary, and explanatory depth
             q_lower = question.lower()
             ans_lower = answer.lower()
+            words = ans_lower.split()
+            word_count = len(words)
             
             # Extract meaningful question terms (>3 chars, non-stopwords)
             stopwords = {"what", "how", "why", "when", "where", "which", "with", "from", "that", "this", "your", "have", "been", "will", "would", "could", "should", "explain", "describe", "discuss"}
@@ -180,23 +200,43 @@ Return ONLY valid JSON matching:
             # Structural/depth indicators
             has_cause_effect = any(phr in ans_lower for phr in ["because", "to decrease", "in order to", "resulted in", "used", "by", "implemented", "trade-off", "tradeoff", "reduces", "improves", "optimizes"])
             has_metrics = bool(re.search(r"\b\d+([%xX]|ms|s|gb|mb|kb|k)?\b", answer))
-            
-            # Compute calibrated score based on criteria:
-            # Relevance (0-35), Technical Depth (0-35), Explanation/Metrics (0-30)
-            relevance_score = min(35, len(matched_q_terms) * 12) if q_terms else 20
-            tech_score = min(35, len(matched_tech) * 10)
-            depth_score = (15 if has_cause_effect else 5) + (15 if has_metrics else 5)
-            
-            calculated_score = relevance_score + tech_score + depth_score
-            
-            # If candidate answer has negligible substance or is completely irrelevant, do not award baseline
-            if len(ans_lower.split()) < 5 or (len(matched_q_terms) == 0 and len(matched_tech) == 0):
-                calculated_score = min(25, calculated_score)
-                feedback_text = "Answer lacks technical depth or direct relevance to the question. Elaborate with concrete architectural examples and engineering trade-offs."
+            sentences = [s.strip() for s in re.split(r"[.!?]+", answer) if len(s.strip().split()) >= 3]
+
+            # Anti-Keyword-Stuffing & Gibberish Protection:
+            # If the candidate provides a list of technical words without proper sentence structure
+            tech_density = (len(matched_tech) / max(1, word_count)) if word_count > 0 else 0
+            is_keyword_stuffing = (tech_density > 0.4 and len(sentences) <= 1) or (word_count >= 10 and len(set(words)) / word_count < 0.4)
+
+            if is_keyword_stuffing:
+                calculated_score = 15
+                feedback_text = "Answer appears to be isolated keywords or repetitive terms without coherent explanatory sentences. Use full sentences explaining technical decisions and trade-offs."
+                strengths_list = ["Recognized relevant terminology"]
+                weaknesses_list = ["Lacks sentence structure and context", "No problem-solving methodology demonstrated"]
+            elif word_count < 15:
+                # Short answer penalty: cannot exceed 25
+                calculated_score = min(25, 10 + len(matched_tech) * 3)
+                feedback_text = "Answer is too brief to demonstrate engineering competence. Elaborate with architecture details, implementation steps, and concrete examples."
+                strengths_list = ["Brief initial response"]
+                weaknesses_list = ["Insufficient detail and depth", "Missing architectural context"]
+            elif len(matched_q_terms) == 0 and len(matched_tech) == 0:
+                # Off-topic answer: cannot exceed 20
+                calculated_score = 15
+                feedback_text = "Answer does not appear relevant to the question asked. Please address the specific topic and core concepts directly."
                 strengths_list = ["Attempted response"]
-                weaknesses_list = ["Lacks specific technical terminology", "Does not directly address core question concepts"]
+                weaknesses_list = ["Does not answer the core question", "Lacks relevant technical terminology"]
             else:
-                calculated_score = min(90, max(50, calculated_score))
+                # Calibrated scoring based on criteria:
+                # Relevance (0-35), Technical Depth (0-35), Explanation/Metrics (0-30)
+                relevance_score = min(35, len(matched_q_terms) * 12) if q_terms else 20
+                tech_score = min(35, len(matched_tech) * 10)
+                depth_score = (15 if has_cause_effect else 5) + (15 if has_metrics else 5)
+                calculated_score = relevance_score + tech_score + depth_score
+                
+                # Cap score if no causal/trade-off reasoning is provided
+                if not has_cause_effect:
+                    calculated_score = min(65, calculated_score)
+
+                calculated_score = min(90, max(30, calculated_score))
                 feedback_text = "Answer demonstrates technical relevance and foundational understanding. Further detail on edge cases and failure modes would strengthen it."
                 strengths_list = [f"Incorporates relevant engineering concepts ({', '.join(matched_tech[:3]) or 'technical focus'})", "Clear problem context"]
                 weaknesses_list = ["Elaborate on production failure modes or scaling trade-offs"]
@@ -224,19 +264,25 @@ Return ONLY valid JSON matching:
         eval_result["score"] = score
         eval_result["isVerifiedAiEvaluation"] = is_verified_ai
         eval_result["evaluationStatus"] = "Verified" if is_verified_ai else "Heuristic Fallback"
+        eval_result["evaluationDisclaimer"] = (
+            "Verified evaluation generated by Google Gemini technical assessment engine."
+            if is_verified_ai
+            else "Automated heuristic estimate (AI evaluation offline). Not equivalent to human or expert assessment. Retry available."
+        )
         eval_result["retryAllowed"] = True
-
-        db = get_database()
+        eval_result["questionIndex"] = question_index if question_index is not None else 0
 
         # Store individual result in results collection (upsert for idempotency & safe retries)
         res_doc = {
             "userId": user_id,
             "sessionId": session_id,
+            "questionIndex": question_index if question_index is not None else 0,
             "question": question,
             "answer": answer,
             "score": score,
             "isVerifiedAiEvaluation": is_verified_ai,
             "evaluationStatus": eval_result["evaluationStatus"],
+            "evaluationDisclaimer": eval_result["evaluationDisclaimer"],
             "feedback": eval_result.get("feedback"),
             "strengths": eval_result.get("strengths", []),
             "weaknesses": eval_result.get("weaknesses", []),
@@ -245,17 +291,19 @@ Return ONLY valid JSON matching:
             "updatedAt": datetime.utcnow()
         }
 
-        # Safe Retry / Upsert logic
-        existing_result = await db["results"].find_one({
-            "userId": user_id,
-            "sessionId": session_id,
-            "question": question
-        })
-        if existing_result:
-            await db["results"].update_one({"_id": existing_result["_id"]}, {"$set": res_doc})
-        else:
-            res_doc["createdAt"] = datetime.utcnow()
-            await db["results"].insert_one(res_doc)
+        # Safe Concurrent Upsert logic
+        await db["results"].update_one(
+            {
+                "userId": user_id,
+                "sessionId": session_id,
+                "question": question
+            },
+            {
+                "$set": res_doc,
+                "$setOnInsert": {"createdAt": datetime.utcnow()}
+            },
+            upsert=True
+        )
 
         if score < 60:
             await db["mistakes"].update_one(
@@ -277,11 +325,11 @@ Return ONLY valid JSON matching:
         if session_id:
             user_session = await db["interviewsessions"].find_one({"_id": to_object_id(session_id), "userId": user_id})
             if user_session:
-                all_results = await db["results"].find({"sessionId": session_id}).to_list(10)
+                all_results = await db["results"].find({"sessionId": session_id, "userId": user_id}).to_list(15)
                 if all_results:
                     avg_score = round(sum(r.get("score", 0) for r in all_results) / len(all_results))
                     await db["interviewsessions"].update_one(
-                        {"_id": to_object_id(session_id)},
+                        {"_id": to_object_id(session_id), "userId": user_id},
                         {"$set": {"overallScore": avg_score, "status": "Completed"}}
                     )
 
@@ -303,11 +351,35 @@ Return ONLY valid JSON matching:
         session = await db["interviewsessions"].find_one({"_id": sess_oid, "userId": user_id})
         if not session:
             raise ValueError("Session not found")
-        questions_results = await db["results"].find({"sessionId": session_id, "userId": user_id}).to_list(20)
+
+        questions_results = await db["results"].find({"sessionId": session_id, "userId": user_id}).to_list(30)
+        
+        # Align results 1-to-1 with session questions
+        session_questions = session.get("questions", [])
+        ordered_results = []
+        result_by_q = {r.get("question", "").strip(): r for r in questions_results}
+        result_by_idx = {r.get("questionIndex"): r for r in questions_results if r.get("questionIndex") is not None}
+
+        for idx, q_text in enumerate(session_questions):
+            q_clean = q_text.strip()
+            if q_clean in result_by_q:
+                r = result_by_q[q_clean]
+                r["questionIndex"] = idx
+                ordered_results.append(r)
+            elif idx in result_by_idx:
+                ordered_results.append(result_by_idx[idx])
+
+        # Include any remaining results that didn't match directly
+        matched_ids = {str(r.get("_id")) for r in ordered_results}
+        for r in questions_results:
+            if str(r.get("_id")) not in matched_ids:
+                ordered_results.append(r)
+
         return {
             "session": serialize_doc(session),
-            "questions": serialize_doc(questions_results)
+            "questions": serialize_doc(ordered_results)
         }
+
 
     @classmethod
     async def delete_session(cls, user_id: str, session_id: str) -> Dict[str, str]:

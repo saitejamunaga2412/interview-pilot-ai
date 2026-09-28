@@ -226,8 +226,9 @@ async def update_project(
 
     update_fields["updatedAt"] = datetime.now(timezone.utc)
 
-    await db["projects"].update_one({"_id": oid}, {"$set": update_fields})
-    updated = await db["projects"].find_one({"_id": oid})
+    await db["projects"].update_one({"_id": oid, "userId": current_user["id"]}, {"$set": update_fields})
+    updated = await db["projects"].find_one({"_id": oid, "userId": current_user["id"]})
+
 
     return {
         "success": True,

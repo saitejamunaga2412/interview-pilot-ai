@@ -128,15 +128,17 @@ async def download_report(session_id: str, current_user: Dict[str, Any] = Depend
         details = await interview_service.get_session_details(user_id, session_id)
         session = details.get("session", {})
         questions = details.get("questions", [])
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": "Interview session not found or unauthorized access."}
+        )
     except Exception:
-        session = {
-            "_id": session_id,
-            "role": "Mock Interview",
-            "level": "Standard",
-            "overallScore": 0,
-            "interviewMode": "Technical"
-        }
-        questions = []
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": "Unable to locate interview session."}
+        )
+
 
     try:
         from services_py.report_generator import generate_interview_pdf

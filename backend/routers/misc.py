@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from typing import Dict, Any, Optional
 from core.database import get_database, serialize_doc, to_object_id
 from core.config import settings
-from core.security import get_current_user, get_optional_user
+from core.security import get_current_user, get_optional_user, require_admin_user
 from services_py.email_service import email_service
 from services_py.scheduler import get_scheduler_status
 
@@ -229,5 +229,6 @@ async def get_knowledge_topics():
 
 # 6. Admin
 @misc_router.get("/api/admin/health")
-async def admin_health():
-    return {"success": True, "status": "optimal"}
+async def admin_health(admin_user: Dict[str, Any] = Depends(require_admin_user)):
+    return {"success": True, "status": "optimal", "admin": admin_user.get("email")}
+

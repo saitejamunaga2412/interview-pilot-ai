@@ -80,7 +80,10 @@ async def ensure_indexes():
         await db["interviewsessions"].create_index("userId")
         await db["results"].create_index("userId")
         await db["results"].create_index("sessionId")
+        await db["results"].create_index([("userId", 1), ("sessionId", 1), ("question", 1)])
+        await db["results"].create_index([("sessionId", 1), ("questionIndex", 1)])
         await db["mistakes"].create_index("userId")
+
         await db["notifications"].create_index("userId")
         await db["notifications"].create_index([("userId", 1), ("dedupeKey", 1)])
         await db["notification_deliveries"].create_index("dedupeKey", unique=True)

@@ -98,3 +98,14 @@ async def get_optional_user(authorization: Optional[str] = Header(None)) -> Opti
         return await get_current_user(authorization)
     except HTTPException:
         return None
+
+async def require_admin_user(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+    """Ensures the authenticated user has administrative privileges."""
+    role = (current_user.get("role") or "").strip().lower()
+    if role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"success": False, "message": "Access denied: Administrator privileges required."}
+        )
+    return current_user
+

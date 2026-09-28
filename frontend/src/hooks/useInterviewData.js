@@ -52,9 +52,14 @@ export function useInterviewData() {
       if (sessionData.duration) setDuration(sessionData.duration);
       setQuestions(sessionData.questions || []);
       
+      const completedDraft = localStorage.getItem(`interview:completed:${sid}`);
       const savedDraft = localStorage.getItem(`interview:draft:${sid}`);
       let parsedAnswers = {};
-      if (savedDraft) {
+      if (completedDraft) {
+        try {
+          parsedAnswers = JSON.parse(completedDraft);
+        } catch {}
+      } else if (savedDraft) {
         try {
           parsedAnswers = JSON.parse(savedDraft);
         } catch {}
@@ -64,19 +69,39 @@ export function useInterviewData() {
       const questionsData = res.data?.data?.questions || [];
       if (questionsData.length > 0) {
         const existingResults = {};
-        let firstUnanswered = 0;
-        questionsData.forEach((q, i) => {
+        const sessQuestions = sessionData.questions || [];
+
+        questionsData.forEach((q, rawIdx) => {
+          // Identify precise index using q.questionIndex or matching question text
+          let matchedIdx = q.questionIndex;
+          if (matchedIdx === undefined || matchedIdx === null || matchedIdx < 0) {
+            matchedIdx = sessQuestions.findIndex(
+              (sq) => sq.trim() === (q.question || "").trim()
+            );
+          }
+          if (matchedIdx === -1) matchedIdx = rawIdx;
+
           if (q.status !== "Not Answered" && q.attemptStatus === "Attempted") {
-            existingResults[i] = q;
-            parsedAnswers[i] = q.answer || parsedAnswers[i];
-          } else {
-            if (firstUnanswered === 0 && !parsedAnswers[i]) firstUnanswered = i;
+            existingResults[matchedIdx] = q;
+            parsedAnswers[matchedIdx] = q.answer || parsedAnswers[matchedIdx] || "";
           }
         });
+
         setResults(existingResults);
         setAnswers(parsedAnswers);
+
+        // Find first question without an evaluated result
+        let firstUnanswered = 0;
+        const totalQ = sessQuestions.length || 5;
+        for (let i = 0; i < totalQ; i++) {
+          if (!existingResults[i]) {
+            firstUnanswered = i;
+            break;
+          }
+        }
         setCurrentQuestionIndex(firstUnanswered);
       }
+
       
       if (sessionData.isTimedInterview && sessionData.startTime) {
         setStartTime(sessionData.startTime);
@@ -174,6 +199,7 @@ export function useInterviewData() {
                 role,
                 level,
                 question,
+                questionIndex: i,
                 answer: answers[i] ?? "",
                 submissionSource
               }
@@ -271,6 +297,7 @@ export function useInterviewData() {
           role,
           level,
           question: q,
+          questionIndex: index,
           answer: ans,
           submissionSource: "retry"
         });

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any, List, Optional
-from core.security import get_current_user
+from core.security import get_current_user, require_admin_user
 from services_py.notification_service import notification_service
 
 router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
@@ -111,13 +111,14 @@ async def update_preferences(payload: Dict[str, Any], current_user: Dict[str, An
     }
 
 @router.get("/email-stats")
-async def get_email_stats(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_email_stats(admin_user: Dict[str, Any] = Depends(require_admin_user)):
     """Admin and system email delivery tracking metrics."""
     stats = await notification_service.get_delivery_stats()
     return {
         "success": True,
         "data": stats
     }
+
 
 @router.api_route("/unsubscribe", methods=["GET", "POST"])
 async def unsubscribe_endpoint(
