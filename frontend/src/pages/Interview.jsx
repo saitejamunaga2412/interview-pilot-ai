@@ -125,7 +125,8 @@ export default function Interview() {
     generateQuestions,
     submitInterview,
     startNewInterview,
-    sessionId
+    sessionId,
+    retryEvaluation
   } = useInterviewData();
 
   const [interviewType, setInterviewType] = useState("Technical");
@@ -773,9 +774,33 @@ export default function Interview() {
                     <h4 className="text-sm font-bold text-text-primary mt-0.5 leading-snug">{q}</h4>
                   </div>
                   
-                  <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
-                    Score: {results[idx]?.score ?? 0}%
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    {results[idx]?.status === "Evaluation Failed" ? (
+                      <span className="text-[10px] font-mono font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">
+                        Evaluation Failed
+                      </span>
+                    ) : results[idx]?.isVerifiedAiEvaluation === false ? (
+                      <span className="text-[10px] font-mono font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                        Estimated Fallback
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                        AI Verified
+                      </span>
+                    )}
+                    <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                      Score: {results[idx]?.score ?? 0}%
+                    </span>
+                    {retryEvaluation && (
+                      <button
+                        onClick={() => retryEvaluation(idx)}
+                        className="text-[11px] font-semibold text-primary-400 hover:text-primary-300 underline cursor-pointer ml-1 transition-colors"
+                        title="Re-run evaluation for this answer"
+                      >
+                        Retry Evaluation
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/50 text-xs">

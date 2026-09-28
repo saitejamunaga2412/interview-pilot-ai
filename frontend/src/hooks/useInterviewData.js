@@ -231,8 +231,12 @@ export function useInterviewData() {
       const newResults = Object.fromEntries(resultEntries);
       setResults(newResults);
 
+      // Keep answers in state and archive draft for safe review/retries
+      try {
+        localStorage.setItem(`interview:completed:${sessionId}`, JSON.stringify(answers));
+      } catch (_) {}
       localStorage.removeItem(`interview:draft:${sessionId}`);
-      setAnswers({});
+      
       setTimeLeft(0);
       setIsTimedInterview(false);
 
@@ -254,6 +258,34 @@ export function useInterviewData() {
       setSubmitting(false);
     }
   }, [submitting, questions, sessionId, answers, role, level, showToast]);
+
+  const retryEvaluation = useCallback(
+    async (index) => {
+      const q = questions[index];
+      const ans = results[index]?.answer || answers[index] || "";
+      if (!q || !sessionId) return;
+      try {
+        showToast("info", `Re-evaluating question ${index + 1}...`);
+        const res = await API.post("/result/evaluate", {
+          sessionId,
+          role,
+          level,
+          question: q,
+          answer: ans,
+          submissionSource: "retry"
+        });
+        const evalData = res.data?.data || res.data || {};
+        setResults((prev) => ({
+          ...prev,
+          [index]: { ...evalData, answer: evalData.answer || ans }
+        }));
+        showToast("success", `Question ${index + 1} re-evaluated successfully!`);
+      } catch (err) {
+        showToast("error", err?.response?.data?.message || "Retry evaluation failed. Please try again.");
+      }
+    },
+    [questions, results, answers, sessionId, role, level, showToast]
+  );
 
   useEffect(() => {
     if (
@@ -374,6 +406,7 @@ export function useInterviewData() {
     generateQuestions,
     submitInterview,
     startNewInterview,
-    sessionId
+    sessionId,
+    retryEvaluation
   };
 }

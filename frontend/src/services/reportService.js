@@ -255,96 +255,226 @@ export async function downloadInterviewReport(sessionId, fallbackData = null) {
  * Generates an ATS Analysis PDF report using jsPDF and autoTable.
  */
 export function exportAtsReportPdf(atsAnalysis = {}, targetRole = "Software Engineer") {
-  const doc = new jsPDF();
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4"
+  });
+
   const analysis = atsAnalysis?.analysis || atsAnalysis || {};
   const overallScore = atsAnalysis?.overallScore ?? analysis?.overall_score ?? 0;
-  const role = targetRole || atsAnalysis?.targetRole || "Software Engineer";
+  const role = targetRole || atsAnalysis?.targetRole || analysis?.target_role || "Software Engineer";
+  const dateStr = new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
-  // Header Banner
-  doc.setFillColor(15, 23, 42); // Slate 900
-  doc.rect(0, 0, 210, 26, "F");
+  const drawHeader = (isFirstPage = false) => {
+    if (isFirstPage) {
+      doc.setFillColor(15, 23, 42); // Navy/Slate 900
+      doc.rect(0, 0, 210, 26, "F");
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(255, 255, 255);
-  doc.text("InterviewPilot AI — Resume ATS Analysis Report", 14, 15);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(255, 255, 255);
+      doc.text("InterviewPilot AI — Resume ATS Analysis Report", 14, 16);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text(`Generated: ${new Date().toLocaleDateString()}`, 150, 15);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Generated: ${dateStr}`, 155, 16);
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`InterviewPilot AI • Resume ATS Report: ${role}`, 14, 12);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 15, 196, 15);
+    }
+  };
 
-  // Target Role & Score Card
+  // Draw Page 1 header
+  drawHeader(true);
+
+  // Target Role & Score Banner
   doc.setTextColor(15, 23, 42);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
+  doc.setFontSize(15);
   doc.text(`Target Role: ${role}`, 14, 38);
 
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(14, 46, 182, 22, 3, 3, "FD");
+  doc.roundedRect(14, 44, 182, 24, 3, 3, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setTextColor(15, 23, 42);
-  doc.text("ATS Compatibility Score:", 20, 60);
+  doc.text("Overall ATS Compatibility Score:", 20, 56);
 
   const scoreColor = overallScore >= 80 ? [16, 185, 129] : overallScore >= 65 ? [6, 182, 212] : [245, 158, 11];
   doc.setTextColor(...scoreColor);
-  doc.setFontSize(14);
-  doc.text(`${overallScore}/100`, 75, 60);
+  doc.setFontSize(16);
+  doc.text(`${overallScore}/100`, 88, 56);
+
+  const statusLabel = overallScore >= 80 ? "High Compatibility" : overallScore >= 65 ? "Moderate Alignment" : "Needs Targeted Optimization";
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`(${statusLabel})`, 128, 56);
+
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text("Deterministic 8-pillar placement benchmark evaluating technical alignment and ATS parseability.", 20, 63);
 
   // Category Scores Table
-  const categoryScores = analysis.category_scores || {};
+  const categoryScores = analysis.category_scores || atsAnalysis.categoryScores || {};
   const catRows = [
-    ["Keyword Match", `${categoryScores.keyword_match ?? 0}%`, "25%"],
-    ["Skills Alignment", `${categoryScores.skills_alignment ?? 0}%`, "20%"],
-    ["Experience Relevance", `${categoryScores.experience_relevance ?? 0}%`, "15%"],
-    ["Projects Relevance", `${categoryScores.projects_relevance ?? 0}%`, "15%"],
-    ["Education", `${categoryScores.education ?? 0}%`, "5%"],
-    ["Structure", `${categoryScores.structure ?? 0}%`, "5%"],
-    ["Formatting", `${categoryScores.formatting ?? 0}%`, "5%"],
-    ["Content Quality", `${categoryScores.content_quality ?? 0}%`, "10%"]
+    ["Keyword Match", `${categoryScores.keyword_match ?? 0}%`, "25%", categoryScores.keyword_match >= 75 ? "Optimal" : "Review Needed"],
+    ["Skills Alignment", `${categoryScores.skills_alignment ?? 0}%`, "20%", categoryScores.skills_alignment >= 75 ? "Strong" : "Gaps Detected"],
+    ["Experience Relevance", `${categoryScores.experience_relevance ?? 0}%`, "15%", categoryScores.experience_relevance >= 70 ? "Relevant" : "Needs Detail"],
+    ["Projects Relevance", `${categoryScores.projects_relevance ?? 0}%`, "15%", categoryScores.projects_relevance >= 70 ? "Strong" : "Needs Focus"],
+    ["Content Quality & Action Verbs", `${categoryScores.content_quality ?? 0}%`, "10%", categoryScores.content_quality >= 70 ? "Impactful" : "Passive"],
+    ["Document Structure", `${categoryScores.structure ?? 0}%`, "5%", categoryScores.structure >= 80 ? "Standard" : "Missing Sections"],
+    ["ATS Formatting Safety", `${categoryScores.formatting ?? 0}%`, "5%", categoryScores.formatting >= 80 ? "Clean" : "Warnings"],
+    ["Education Relevance", `${categoryScores.education ?? 0}%`, "5%", categoryScores.education >= 70 ? "Aligned" : "Basic"]
   ];
 
   autoTable(doc, {
-    startY: 76,
-    head: [["Evaluation Category", "Score", "Weight"]],
+    startY: 74,
+    head: [["Evaluation Category", "Score", "Weight", "Assessment"]],
     body: catRows,
-    headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 9 },
-    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 40, halign: "center", fontStyle: "bold" }, 2: { cellWidth: 40, halign: "center" } },
-    styles: { fontSize: 8.5, cellPadding: 3, textColor: [51, 65, 85] }
+    headStyles: {
+      fillColor: [79, 70, 229],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 8.5
+    },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: 32, halign: "center", fontStyle: "bold" },
+      2: { cellWidth: 30, halign: "center" },
+      3: { cellWidth: 40, halign: "center" }
+    },
+    styles: {
+      fontSize: 8,
+      cellPadding: 2.8,
+      textColor: [51, 65, 85],
+      lineColor: [226, 232, 240],
+      lineWidth: 0.15
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252]
+    }
   });
 
-  // Keywords section
-  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 180;
+  let cursorY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : 175;
+
+  const ensureSpace = (neededHeight) => {
+    if (cursorY + neededHeight > 265) {
+      doc.addPage();
+      drawHeader(false);
+      cursorY = 24;
+    }
+  };
+
+  // 1. Detected Keywords
+  const detected = (analysis.detected_keywords || []).slice(0, 25).join(", ") || "No specific target keywords detected.";
+  ensureSpace(22);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
-  doc.text("Detected Keywords:", 14, finalY);
+  doc.text("Detected Technical Keywords & Skills:", 14, cursorY);
+  cursorY += 5;
 
-  const detected = (analysis.detected_keywords || []).slice(0, 15).join(", ") || "None";
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(71, 85, 105);
-  doc.text(doc.splitTextToSize(detected, 180), 14, finalY + 6);
-
-  const missingY = finalY + 18;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(220, 38, 38);
-  doc.text("Missing Keywords / Recommended Skills:", 14, missingY);
-
-  const missing = (analysis.missing_keywords || []).slice(0, 12).join(", ") || "None";
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(71, 85, 105);
-  doc.text(doc.splitTextToSize(missing, 180), 14, missingY + 6);
-
-  // Footer
   doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184);
-  doc.text("InterviewPilot AI • Resume Intelligence Engine • Confidential", 14, 280);
+  doc.setTextColor(51, 65, 85);
+  const detectedLines = doc.splitTextToSize(detected, 182);
+  doc.text(detectedLines, 14, cursorY);
+  cursorY += (detectedLines.length * 4.2) + 6;
 
-  doc.save(`ATS_Report_${role.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+  // 2. Missing Keywords & Skill Gaps
+  const missing = (analysis.missing_keywords || []).slice(0, 20).join(", ") || "None. Comprehensive skill coverage detected.";
+  ensureSpace(22);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(220, 38, 38);
+  doc.text("Missing Keywords / Recommended Target Skills:", 14, cursorY);
+  cursorY += 5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  const missingLines = doc.splitTextToSize(missing, 182);
+  doc.text(missingLines, 14, cursorY);
+  cursorY += (missingLines.length * 4.2) + 7;
+
+  // 3. Identified Strengths
+  const strengths = Array.isArray(analysis.strengths) && analysis.strengths.length > 0
+    ? analysis.strengths
+    : [
+        "Well-structured resume sections with clean typography.",
+        "Demonstrates solid foundational technical knowledge aligned with target role."
+      ];
+
+  ensureSpace(16 + strengths.length * 6);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(16, 185, 129); // Emerald
+  doc.text("Identified Profile Strengths:", 14, cursorY);
+  cursorY += 5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(51, 65, 85);
+  strengths.slice(0, 4).forEach((str) => {
+    ensureSpace(8);
+    const bulletLines = doc.splitTextToSize(`• ${str}`, 180);
+    doc.text(bulletLines, 16, cursorY);
+    cursorY += (bulletLines.length * 4.2);
+  });
+  cursorY += 4;
+
+  // 4. Recommendations & Improvements
+  const recommendations = Array.isArray(analysis.recommendations) && analysis.recommendations.length > 0
+    ? analysis.recommendations
+    : Array.isArray(analysis.issues) && analysis.issues.length > 0
+    ? analysis.issues
+    : [
+        "Integrate missing high-priority target role keywords naturally into project descriptions.",
+        "Quantify project outcomes with numerical metrics (e.g., latency, throughput, users served)."
+      ];
+
+  ensureSpace(16 + recommendations.length * 6);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(79, 70, 229); // Indigo
+  doc.text("Strategic Recommendations & Action Items:", 14, cursorY);
+  cursorY += 5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(51, 65, 85);
+  recommendations.slice(0, 5).forEach((rec) => {
+    ensureSpace(8);
+    const text = typeof rec === "string" ? rec : rec.text || rec.issue || rec.recommendation || JSON.stringify(rec);
+    const recLines = doc.splitTextToSize(`• ${text}`, 180);
+    doc.text(recLines, 16, cursorY);
+    cursorY += (recLines.length * 4.2);
+  });
+
+  // Footer on all pages
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, 282, 196, 282);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Page ${i} of ${totalPages}  •  InterviewPilot AI  •  Resume Intelligence Engine`, 14, 287);
+    doc.text("Confidential Report", 196, 287, { align: "right" });
+  }
+
+  const safeRole = role.replace(/[^a-zA-Z0-9]/g, "_");
+  doc.save(`ATS_Report_${safeRole}.pdf`);
   return true;
 }

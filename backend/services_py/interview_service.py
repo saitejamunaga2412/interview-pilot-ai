@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from core.database import get_database, to_object_id, serialize_doc
@@ -143,23 +144,70 @@ Return ONLY valid JSON matching:
 }}"""
 
         eval_result = None
+        is_verified_ai = False
         try:
             res = await ai_provider.generate_json(eval_prompt)
-            eval_result = res.get("data")
+            eval_data = res.get("data")
+            if isinstance(eval_data, dict) and "score" in eval_data:
+                eval_result = eval_data
+                is_verified_ai = True
         except Exception:
-            pass
+            eval_result = None
+            is_verified_ai = False
 
         if not eval_result or not isinstance(eval_result, dict):
-            # Deterministic fallback evaluation based on answer length & substance
-            word_count = len(answer.split())
-            score = min(90, max(40, word_count * 2))
+            # Substantive heuristic evaluation: evaluate question relevance, technical vocabulary, and explanatory depth
+            q_lower = question.lower()
+            ans_lower = answer.lower()
+            
+            # Extract meaningful question terms (>3 chars, non-stopwords)
+            stopwords = {"what", "how", "why", "when", "where", "which", "with", "from", "that", "this", "your", "have", "been", "will", "would", "could", "should", "explain", "describe", "discuss"}
+            q_terms = [w.strip("?,.:;\"'") for w in q_lower.split() if len(w) > 3 and w.strip("?,.:;\"'") not in stopwords]
+            matched_q_terms = [term for term in q_terms if term in ans_lower]
+            
+            # Key technical signals
+            tech_vocabulary = {
+                "api", "rest", "cache", "redis", "database", "sql", "query", "index",
+                "latency", "throughput", "concurrency", "thread", "async", "await", "promise",
+                "component", "state", "props", "hook", "dom", "algorithm", "complexity",
+                "memory", "cpu", "server", "microservice", "docker", "pipeline", "test",
+                "deploy", "git", "schema", "architecture", "security", "token", "jwt",
+                "scale", "scalability", "load", "optimization", "optimize", "distributed",
+                "performance", "metric", "monitoring", "framework", "lifecycle", "hash"
+            }
+            matched_tech = [t for t in tech_vocabulary if t in ans_lower]
+            
+            # Structural/depth indicators
+            has_cause_effect = any(phr in ans_lower for phr in ["because", "to decrease", "in order to", "resulted in", "used", "by", "implemented", "trade-off", "tradeoff", "reduces", "improves", "optimizes"])
+            has_metrics = bool(re.search(r"\b\d+([%xX]|ms|s|gb|mb|kb|k)?\b", answer))
+            
+            # Compute calibrated score based on criteria:
+            # Relevance (0-35), Technical Depth (0-35), Explanation/Metrics (0-30)
+            relevance_score = min(35, len(matched_q_terms) * 12) if q_terms else 20
+            tech_score = min(35, len(matched_tech) * 10)
+            depth_score = (15 if has_cause_effect else 5) + (15 if has_metrics else 5)
+            
+            calculated_score = relevance_score + tech_score + depth_score
+            
+            # If candidate answer has negligible substance or is completely irrelevant, do not award baseline
+            if len(ans_lower.split()) < 5 or (len(matched_q_terms) == 0 and len(matched_tech) == 0):
+                calculated_score = min(25, calculated_score)
+                feedback_text = "Answer lacks technical depth or direct relevance to the question. Elaborate with concrete architectural examples and engineering trade-offs."
+                strengths_list = ["Attempted response"]
+                weaknesses_list = ["Lacks specific technical terminology", "Does not directly address core question concepts"]
+            else:
+                calculated_score = min(90, max(50, calculated_score))
+                feedback_text = "Answer demonstrates technical relevance and foundational understanding. Further detail on edge cases and failure modes would strengthen it."
+                strengths_list = [f"Incorporates relevant engineering concepts ({', '.join(matched_tech[:3]) or 'technical focus'})", "Clear problem context"]
+                weaknesses_list = ["Elaborate on production failure modes or scaling trade-offs"]
+
             eval_result = {
-                "score": score,
+                "score": calculated_score,
                 "attemptStatus": "Attempted",
-                "feedback": "Answer demonstrates foundational knowledge. Elaborate on edge cases and concrete performance trade-offs.",
-                "strengths": ["Clear communication", "Directly addressed the prompt"],
-                "weaknesses": ["Could include more specific real-world metrics"],
-                "correctAnswer": "Provide structured explanation covering definition, trade-offs, and implementation details.",
+                "feedback": feedback_text,
+                "strengths": strengths_list,
+                "weaknesses": weaknesses_list,
+                "correctAnswer": f"A comprehensive model response addressing {q_terms[0] if q_terms else 'the core concept'} with architecture, performance trade-offs, and implementation metrics.",
                 "topicCategory": "Engineering Fundamentals"
             }
         else:
@@ -171,27 +219,43 @@ Return ONLY valid JSON matching:
         except (ValueError, TypeError):
             score = 70
 
-        if len(answer.split()) >= 4 and score <= 0:
-            score = 45
+        # Bound score properly between 0 and 100 without artificial inflation
+        score = max(0, min(100, score))
         eval_result["score"] = score
+        eval_result["isVerifiedAiEvaluation"] = is_verified_ai
+        eval_result["evaluationStatus"] = "Verified" if is_verified_ai else "Heuristic Fallback"
+        eval_result["retryAllowed"] = True
 
         db = get_database()
 
-        # Store individual result in results collection
+        # Store individual result in results collection (upsert for idempotency & safe retries)
         res_doc = {
             "userId": user_id,
             "sessionId": session_id,
             "question": question,
             "answer": answer,
             "score": score,
+            "isVerifiedAiEvaluation": is_verified_ai,
+            "evaluationStatus": eval_result["evaluationStatus"],
             "feedback": eval_result.get("feedback"),
             "strengths": eval_result.get("strengths", []),
             "weaknesses": eval_result.get("weaknesses", []),
             "correctAnswer": eval_result.get("correctAnswer"),
             "attemptStatus": "Attempted",
-            "createdAt": datetime.utcnow()
+            "updatedAt": datetime.utcnow()
         }
-        await db["results"].insert_one(res_doc)
+
+        # Safe Retry / Upsert logic
+        existing_result = await db["results"].find_one({
+            "userId": user_id,
+            "sessionId": session_id,
+            "question": question
+        })
+        if existing_result:
+            await db["results"].update_one({"_id": existing_result["_id"]}, {"$set": res_doc})
+        else:
+            res_doc["createdAt"] = datetime.utcnow()
+            await db["results"].insert_one(res_doc)
 
         if score < 60:
             await db["mistakes"].update_one(
